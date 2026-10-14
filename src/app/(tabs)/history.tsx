@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
@@ -86,6 +87,7 @@ export default function History() {
   const visible = expanded ? filtered : filtered.slice(0, PAGE_SIZE);
 
   const toggleSelect = (id: string) => {
+    Haptics.selectionAsync().catch(() => {});
     setSelected((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       return next.slice(-2);

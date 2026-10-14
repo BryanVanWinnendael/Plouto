@@ -63,16 +63,23 @@ export function makeFxConverter(
     convert: (amount, from, date) => {
       if (from.toUpperCase() === reportingCurrency.toUpperCase()) return amount;
       const target = new Date(date).getTime();
-      const candidates = rates
-        .filter(
-          (r) =>
-            r.fromCurrency.toUpperCase() === from.toUpperCase() &&
-            r.toCurrency.toUpperCase() === reportingCurrency.toUpperCase() &&
-            new Date(r.effectiveDate).getTime() <= target
-        )
+      const pair = rates.filter(
+        (r) =>
+          r.fromCurrency.toUpperCase() === from.toUpperCase() &&
+          r.toCurrency.toUpperCase() === reportingCurrency.toUpperCase()
+      );
+      if (pair.length === 0) return null;
+      // Prefer the latest rate effective on/before the observation date.
+      const before = pair
+        .filter((r) => new Date(r.effectiveDate).getTime() <= target)
         .sort((a, b) => +new Date(b.effectiveDate) - +new Date(a.effectiveDate));
-      if (candidates.length === 0) return null;
-      return toDecimal(amount).times(toDecimal(candidates[0].rate)).toString();
+      if (before.length > 0) {
+        return toDecimal(amount).times(toDecimal(before[0].rate)).toString();
+      }
+      // Fallback: no rate predates the observation (e.g. rate added later) —
+      // use the earliest available rate rather than dropping the balance.
+      const after = pair.sort((a, b) => +new Date(a.effectiveDate) - +new Date(b.effectiveDate));
+      return toDecimal(amount).times(toDecimal(after[0].rate)).toString();
     },
   };
 }

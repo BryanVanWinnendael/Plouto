@@ -127,7 +127,10 @@ export function Chip({ label, active, onPress }: { label: string; active?: boole
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      onPress={onPress}
+      onPress={() => {
+        Haptics.selectionAsync().catch(() => {});
+        onPress?.();
+      }}
       style={{
         paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999,
         backgroundColor: active ? theme.primarySoft : theme.surface2,
@@ -154,7 +157,7 @@ const styles = StyleSheet.create({
  * Native-feeling liquid-glass back button: frosted capsule with chevron.
  * Use on pushed screens instead of a plain text link.
  */
-export function BackButton({ label = "Back", onPress }: { label?: string; onPress?: () => void }) {
+export function BackButton({ label = "Back", onPress, chevron = true }: { label?: string; onPress?: () => void; chevron?: boolean }) {
   const { theme, isDark } = useTheme();
   return (
     <Pressable
@@ -182,8 +185,8 @@ export function BackButton({ label = "Back", onPress }: { label?: string; onPres
         style={StyleSheet.absoluteFill}
       />
       <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingLeft: 12, paddingRight: 16 }}>
-        <Text style={{ color: theme.primary, fontSize: 20, fontWeight: "700", marginTop: -2 }}>‹</Text>
-        <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "600", marginLeft: 2 }}>{label}</Text>
+        {chevron && <Text style={{ color: theme.primary, fontSize: 20, fontWeight: "700", marginTop: -2 }}>‹</Text>}
+        <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "600", marginLeft: chevron ? 2 : 0 }}>{label}</Text>
       </View>
     </Pressable>
   );

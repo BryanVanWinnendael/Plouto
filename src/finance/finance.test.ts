@@ -133,7 +133,7 @@ describe("yearly", () => {
 });
 
 describe("multi-currency", () => {
-  test("uses effective-date rate; missing rate => incomplete", () => {
+  test("uses effective-date rate; falls back to earliest rate for older observations", () => {
     const a = acc("eur", "asset", "Savings", "EUR");
     const byId = new Map([[a.id, a]]);
     const fx2 = makeFxConverter("USD", [
@@ -145,10 +145,24 @@ describe("multi-currency", () => {
     };
     const t = totalsForSnapshot(snap, byId, fx2);
     expect(t.assets).toBe("110");
+    // Observation predates the only rate: falls back to earliest available rate.
     const old: SnapshotWithEntries = { ...snap, observedAt: "2024-01-01T00:00:00Z" };
     const t2 = totalsForSnapshot(old, byId, fx2);
-    expect(t2.incomplete).toBe(true);
-    expect(t2.assets).toBe("0");
+    expect(t2.incomplete).toBe(false);
+    expect(t2.assets).toBe("110");
+  });
+
+  test("no rate at all => incomplete, never invented", () => {
+    const a = acc("gbp", "asset", "Savings", "GBP");
+    const byId = new Map([[a.id, a]]);
+    const fx2 = makeFxConverter("USD", []);
+    const snap: SnapshotWithEntries = {
+      id: "s", title: null, observedAt: "2025-06-01T00:00:00Z", createdAt: "", updatedAt: "", notes: null,
+      entries: [{ id: "e", snapshotId: "s", accountId: "gbp", observedBalance: "100", currency: "GBP", notes: null, verified: 1, createdAt: "", updatedAt: "" }],
+    };
+    const t = totalsForSnapshot(snap, byId, fx2);
+    expect(t.incomplete).toBe(true);
+    expect(t.assets).toBe("0");
   });
 });
 

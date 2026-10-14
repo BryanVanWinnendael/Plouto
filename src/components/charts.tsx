@@ -102,6 +102,7 @@ export function LineChart({
   const selPoint = selLocal != null ? visible[selLocal] : null;
 
   const handlePress = (i: number) => {
+    Haptics.selectionAsync().catch(() => {});
     const g = start + i;
     setHover(i);
     setAnchor(g);
@@ -133,11 +134,13 @@ export function LineChart({
           if (onZoomEdge && dir !== 0 && now - p.lastFire > 900) {
             if (dir === 1 && raw >= maxZoom) {
               pinch.current = { d0: d, zoom0: maxZoom, lastD: d, lastFire: now };
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
               onZoomEdge(1);
               return;
             }
             if (dir === -1 && clamped <= 1 && d < p.d0 * 0.7) {
               pinch.current = { d0: d, zoom0: 1, lastD: d, lastFire: now };
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
               onZoomEdge(-1);
               return;
             }
@@ -217,7 +220,10 @@ export function LineChart({
               accessibilityRole="button"
               accessibilityLabel="Reset chart zoom"
               hitSlop={10}
-              onPress={() => { setZoom(1); setAnchor(null); setHover(null); }}
+              onPress={() => {
+                Haptics.selectionAsync().catch(() => {});
+                setZoom(1); setAnchor(null); setHover(null);
+              }}
               style={{ borderRadius: 999, overflow: "hidden", borderWidth: 1, borderColor: theme.border }}
             >
               <BlurView

@@ -5,7 +5,7 @@ import { useApp } from "@/store/AppContext";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Muted, Title, useSheet } from "@/components/ui";
+import { Btn, BackButton, Muted, Title, useSheet } from "@/components/ui";
 import { saveAccount } from "@/db/repo";
 import { DEFAULT_ACCOUNT_CATEGORIES } from "@/finance/types";
 
@@ -55,9 +55,7 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
           style={StyleSheet.absoluteFill}
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Pressable onPress={onClose} hitSlop={12}>
-            <Text style={{ color: theme.primary, fontSize: 16 }}>Cancel</Text>
-          </Pressable>
+          <BackButton label="Cancel" chevron={false} onPress={onClose} />
           <View style={{ flex: 1, alignItems: "center" }}>
             <Title style={{ fontSize: 18 }}>{existing ? "Edit account" : "New account"}</Title>
           </View>

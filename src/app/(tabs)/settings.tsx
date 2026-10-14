@@ -107,7 +107,7 @@ export default function Settings() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700" }}>Manual exchange rates</Text>
-          <Muted>No external rate fetching. Historical math uses the rate effective at each observation date. Missing rate → incomplete total (never invented).</Muted>
+          <Muted>No external rate fetching. Each observation uses the latest rate on/before its date — or the earliest available rate when none predates it. No rate at all → incomplete total (never invented).</Muted>
           <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
             <TextInput value={from} onChangeText={(t) => setFrom(t.toUpperCase())} maxLength={3} autoCapitalize="characters"
               style={{ backgroundColor: theme.surface2, color: theme.text, borderRadius: 8, padding: 10, width: 70, textAlign: "center" }} />
