@@ -1,7 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, DatePicker } from "@expo/ui/swift-ui";
 import { environment } from "@expo/ui/swift-ui/modifiers";
@@ -15,10 +13,10 @@ import { saveSnapshot, type EntryInput } from "@/db/repo";
 import { parseMoneyInput, formatMoney, toDecimal } from "@/finance/money";
 import { sumDecimal, quantize } from "@/finance/money";
 
-export default function NewSnapshot() {
+/** Snapshot creation form, designed to live inside a native bottom sheet. */
+export default function SnapshotForm({ onClose }: { onClose: () => void }) {
   const { theme, isDark } = useTheme();
   const sheet = useSheet();
-  const insets = useSafeAreaInsets();
   const db = useSQLiteContext();
   const app = useApp();
   const { accounts, snapshots, fx, reportingCurrency, locale } = app;
@@ -91,7 +89,7 @@ export default function NewSnapshot() {
         notes: notes.trim() || null, entries,
       });
       await app.refresh();
-      router.back();
+      onClose();
     };
     if (sameMinute) {
       Alert.alert("Duplicate time?", "A snapshot already exists at this observation time. Save anyway?", [
@@ -104,7 +102,7 @@ export default function NewSnapshot() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: sheet.bg }}>
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s }}>
         <BlurView
           intensity={70}
@@ -114,7 +112,7 @@ export default function NewSnapshot() {
         <Title>{review ? "Review snapshot" : "New snapshot"}</Title>
         <Muted>Only included accounts are recorded. Absent ≠ zero.</Muted>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }} keyboardShouldPersistTaps="handled">
         {!review ? (
           <>
             <GlassCard>
@@ -201,7 +199,7 @@ export default function NewSnapshot() {
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: insets.bottom + 8,
+          paddingBottom: 34,
         }}
       >
         {!review ? (
@@ -213,6 +211,6 @@ export default function NewSnapshot() {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

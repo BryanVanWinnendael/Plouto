@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useApp } from "@/store/AppContext";
 import { BlurView } from "expo-blur";
@@ -11,15 +9,13 @@ import { Btn, Muted, Title, useSheet } from "@/components/ui";
 import { saveAccount } from "@/db/repo";
 import { DEFAULT_ACCOUNT_CATEGORIES } from "@/finance/types";
 
-/** Native modal screen for creating / editing an account (replaces the old raw Modal). */
-export default function AccountForm() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+/** Account create/edit form, designed to live inside a native bottom sheet. */
+export default function AccountForm({ accountId, onClose }: { accountId?: string; onClose: () => void }) {
   const { theme, isDark } = useTheme();
   const sheet = useSheet();
-  const insets = useSafeAreaInsets();
   const db = useSQLiteContext();
   const app = useApp();
-  const existing = app.accounts.find((a) => a.id === id);
+  const existing = app.accounts.find((a) => a.id === accountId);
 
   const [name, setName] = useState(existing?.name ?? "");
   const [kind, setKind] = useState<"asset" | "liability">(existing?.kind ?? "asset");
@@ -47,11 +43,11 @@ export default function AccountForm() {
       archived: existing?.archived ?? 0,
     });
     await app.refresh();
-    router.back();
+    onClose();
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: sheet.bg }}>
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s }}>
         <BlurView
           intensity={70}
@@ -59,7 +55,7 @@ export default function AccountForm() {
           style={StyleSheet.absoluteFill}
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
+          <Pressable onPress={onClose} hitSlop={12}>
             <Text style={{ color: theme.primary, fontSize: 16 }}>Cancel</Text>
           </Pressable>
           <View style={{ flex: 1, alignItems: "center" }}>
@@ -70,7 +66,7 @@ export default function AccountForm() {
         <Muted>You can create multiple accounts of the same type.</Muted>
       </View>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: insets.bottom + 110 }}
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }}
         keyboardShouldPersistTaps="handled"
       >
 
@@ -179,11 +175,11 @@ export default function AccountForm() {
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: insets.bottom + 8,
+          paddingBottom: 34,
         }}
       >
         <Btn label={existing ? "Save changes" : "Create account"} onPress={save} />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -7,6 +7,8 @@ import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Muted, Title } from "@/components/ui";
+import { SheetHost } from "@/components/SheetHost";
+import AccountForm from "@/components/AccountForm";
 import { deleteAccount, saveAccount } from "@/db/repo";
 import { formatMoney } from "@/finance/money";
 import { latestKnownPosition } from "@/finance/calculations";
@@ -19,6 +21,17 @@ export default function Accounts() {
   const app = useApp();
   const { accounts, snapshots, fx, reportingCurrency, locale } = app;
   const [showArchived, setShowArchived] = useState(false);
+  const [acctOpen, setAcctOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | undefined>(undefined);
+
+  const openNew = () => {
+    setEditingId(undefined);
+    setAcctOpen(true);
+  };
+  const openEdit = (id: string) => {
+    setEditingId(id);
+    setAcctOpen(true);
+  };
 
   const lkp = useMemo(
     () => latestKnownPosition([...snapshots].sort((a, b) => +new Date(a.observedAt) - +new Date(b.observedAt)), accounts, fx),
@@ -80,7 +93,7 @@ export default function Accounts() {
         </View>
         <Muted>Stale values are labeled — never shown as live balances.</Muted>
         <View style={{ marginVertical: 10 }}>
-          <Btn label="+ New account" onPress={() => router.push("/account/new")} />
+          <Btn label="+ New account" onPress={openNew} />
         </View>
 
         {grouped.map(([cat, list]) => (
@@ -106,7 +119,7 @@ export default function Accounts() {
                     {pos ? ` · as of ${pos.observedAt.slice(0, 10)}` : " · never observed (not zero)"}
                   </Muted>
                   <View style={{ flexDirection: "row", gap: 12, marginTop: 6 }}>
-                    <Pressable onPress={() => router.push(`/account/new?id=${a.id}`)}><Text style={{ color: theme.primary, fontSize: 12 }}>Edit</Text></Pressable>
+                    <Pressable onPress={() => openEdit(a.id)}><Text style={{ color: theme.primary, fontSize: 12 }}>Edit</Text></Pressable>
                     <Pressable onPress={() => archive(a.id, !a.archived)}><Text style={{ color: theme.primary, fontSize: 12 }}>{a.archived ? "Restore" : "Archive"}</Text></Pressable>
                     <Pressable onPress={() => remove(a.id)}><Text style={{ color: theme.danger, fontSize: 12 }}>Delete</Text></Pressable>
                   </View>
@@ -119,6 +132,9 @@ export default function Accounts() {
           <Card><Muted>No accounts yet. Create your first account above.</Muted></Card>
         )}
       </ScrollView>
+      <SheetHost open={acctOpen} onOpenChange={setAcctOpen}>
+        <AccountForm accountId={editingId} onClose={() => setAcctOpen(false)} />
+      </SheetHost>
     </SafeAreaView>
   );
 }

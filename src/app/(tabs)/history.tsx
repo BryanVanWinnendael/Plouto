@@ -8,6 +8,8 @@ import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
+import { SheetHost } from "@/components/SheetHost";
+import SnapshotForm from "@/components/SnapshotForm";
 import { DonutChart, LineChart } from "@/components/charts";
 import { highestLowest, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { allocationBy, positionsForAllocation } from "@/finance/allocation";
@@ -24,6 +26,7 @@ export default function History() {
   const [allocSnapId, setAllocSnapId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [snapOpen, setSnapOpen] = useState(false);
 
   const ordered = useMemo(
     () => [...snapshots].sort((a, b) => +new Date(a.observedAt) - +new Date(b.observedAt)),
@@ -232,10 +235,13 @@ export default function History() {
         {ordered.length === 0 && (
           <Card>
             <Muted>No snapshots yet.</Muted>
-            <Btn label="Create first snapshot" onPress={() => router.push("/snapshot/new")} />
+            <Btn label="Create first snapshot" onPress={() => setSnapOpen(true)} />
           </Card>
         )}
       </ScrollView>
+      <SheetHost open={snapOpen} onOpenChange={setSnapOpen}>
+        <SnapshotForm onClose={() => setSnapOpen(false)} />
+      </SheetHost>
       {selected.length === 2 && (
         <View
           style={{

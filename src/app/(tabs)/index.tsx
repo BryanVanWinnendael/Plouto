@@ -7,6 +7,8 @@ import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Chip, GlassCard, Money, Muted, Title } from "@/components/ui";
+import { SheetHost } from "@/components/SheetHost";
+import SnapshotForm from "@/components/SnapshotForm";
 import { LineChart } from "@/components/charts";
 import { filterByRange, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { formatMoney, formatMoneyCompact, formatSigned, pctChange, toDecimal } from "@/finance/money";
@@ -26,6 +28,7 @@ export default function Overview() {
   const [step, setStep] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [snapOpen, setSnapOpen] = useState(false);
 
   /** Pinch past the chart limits steps the time range (zoom in = shorter range). */
   const stepRange = (dir: 1 | -1) => {
@@ -124,7 +127,7 @@ export default function Overview() {
           <Card>
             <Title style={{ fontSize: 18 }}>No snapshots yet</Title>
             <Muted style={{ marginVertical: 8 }}>Add your accounts, then record your first snapshot to start your history.</Muted>
-            <Btn label="+ New snapshot" onPress={() => router.push("/snapshot/new")} />
+            <Btn label="+ New snapshot" onPress={() => setSnapOpen(true)} />
           </Card>
         )}
 
@@ -166,7 +169,7 @@ export default function Overview() {
 
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
           <View style={{ flex: 1 }}>
-            <Btn label="+ Snapshot" onPress={() => router.push("/snapshot/new")} />
+            <Btn label="+ Snapshot" onPress={() => setSnapOpen(true)} />
           </View>
           <View style={{ flex: 1 }}>
             <Btn label="+ Account" variant="ghost" onPress={() => router.push("/(tabs)/accounts")} />
@@ -196,6 +199,9 @@ export default function Overview() {
           </Card>
         )}
       </ScrollView>
+      <SheetHost open={snapOpen} onOpenChange={setSnapOpen}>
+        <SnapshotForm onClose={() => setSnapOpen(false)} />
+      </SheetHost>
     </SafeAreaView>
   );
 }

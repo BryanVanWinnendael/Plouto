@@ -47,33 +47,9 @@ function ThemedStack() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" />
-        <Stack.Screen
-          name="snapshot/new"
-          options={{
-            presentation: "formSheet",
-            contentStyle: { backgroundColor: "transparent" },
-            sheetAllowedDetents: [0.5, 1.0],
-            sheetInitialDetentIndex: 1,
-            sheetGrabberVisible: true,
-            sheetCornerRadius: 20,
-            sheetExpandsWhenScrolledToEdge: true,
-          }}
-        />
         <Stack.Screen name="snapshot/[id]" />
         <Stack.Screen name="snapshot/compare" />
         <Stack.Screen name="account/[id]" />
-        <Stack.Screen
-          name="account/new"
-          options={{
-            presentation: "formSheet",
-            contentStyle: { backgroundColor: "transparent" },
-            sheetAllowedDetents: [0.5, 1.0],
-            sheetInitialDetentIndex: 1,
-            sheetGrabberVisible: true,
-            sheetCornerRadius: 20,
-            sheetExpandsWhenScrolledToEdge: true,
-          }}
-        />
       </Stack>
       </NavThemeProvider>
     </>
