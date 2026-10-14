@@ -66,7 +66,7 @@ export default function AccountDetail() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Balance history</Text>
-          <LineChart points={points} />
+          <LineChart points={points} formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)} />
         </Card>
 
         {account.notes ? <Card><Muted>{account.notes}</Muted></Card> : null}

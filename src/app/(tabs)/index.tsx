@@ -130,6 +130,7 @@ export default function Overview() {
             points={points}
             step={step}
             selectedIndex={sel}
+            formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             onSelect={(i) => {
               setSel(i);
               const p = series[i];

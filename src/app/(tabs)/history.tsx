@@ -11,7 +11,7 @@ import { DonutChart, LineChart } from "@/components/charts";
 import { highestLowest, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { allocationBy, positionsForAllocation } from "@/finance/allocation";
 import { yearlySummaries } from "@/finance/yearly";
-import { formatMoney } from "@/finance/money";
+import { formatMoney, sumDecimal } from "@/finance/money";
 
 export default function History() {
   const { theme } = useTheme();
@@ -88,6 +88,7 @@ export default function History() {
         <Card>
           <LineChart
             points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
+            formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             onSelect={(i) => { const p = series[i]; if (p) router.push(`/snapshot/${p.snapshotId}`); }}
           />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
@@ -116,7 +117,15 @@ export default function History() {
               <Chip key={s.id} label={s.observedAt.slice(0, 10)} active={allocSnapId === s.id} onPress={() => setAllocSnapId(s.id)} />
             ))}
           </ScrollView>
-          {slices.length > 0 ? <DonutChart slices={slices} /> : <Muted>No asset observations yet.</Muted>}
+          {slices.length > 0 ? (
+            <DonutChart
+              slices={slices}
+              centerValue={formatMoney(sumDecimal(positions.map((p) => p.converted)), reportingCurrency, locale)}
+              centerLabel="Total assets"
+            />
+          ) : (
+            <Muted>No asset observations yet.</Muted>
+          )}
         </Card>
 
         <Card>
