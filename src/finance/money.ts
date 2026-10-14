@@ -88,3 +88,18 @@ export function formatSigned(amount: string | number, currency: string, locale?:
   const sign = d.isNeg() ? "−" : d.isZero() ? "" : "+";
   return `${sign}${formatMoney(d.abs().toString(), currency, locale)}`;
 }
+
+/** Short axis-friendly money label (€45K, $1.2M) so tick labels never collide with the line. */
+export function formatMoneyCompact(amount: string | number, currency: string, locale?: string): string {
+  const num = toDecimal(amount).toNumber();
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(num);
+  } catch {
+    return formatMoney(amount, currency, locale);
+  }
+}

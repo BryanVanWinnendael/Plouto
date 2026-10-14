@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
@@ -11,10 +12,11 @@ import { DonutChart, LineChart } from "@/components/charts";
 import { highestLowest, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { allocationBy, positionsForAllocation } from "@/finance/allocation";
 import { yearlySummaries } from "@/finance/yearly";
-import { formatMoney, sumDecimal } from "@/finance/money";
+import { formatMoney, formatMoneyCompact, sumDecimal } from "@/finance/money";
 
 export default function History() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
   const { snapshots, accounts, accountsById, fx, reportingCurrency, locale, refresh } = useApp();
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -90,7 +92,7 @@ export default function History() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.l, paddingBottom: 60 }}
+        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? 220 : 60 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -109,6 +111,7 @@ export default function History() {
           <LineChart
             points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
+            formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onSelect={(i) => { const p = series[i]; if (p) router.push(`/snapshot/${p.snapshotId}`); }}
           />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
@@ -176,10 +179,7 @@ export default function History() {
           </ScrollView>
         )}
 
-        {selected.length === 2 && (
-          <Btn label="Compare selected" onPress={() => router.push(`/snapshot/compare?a=${selected[0]}&b=${selected[1]}`)} />
-        )}
-        {selected.length > 0 && (
+        {selected.length > 0 && selected.length < 2 && (
           <Muted style={{ marginVertical: 6 }}>Selected {selected.length}/2 — use the checkboxes to pick two.</Muted>
         )}
 
@@ -211,14 +211,14 @@ export default function History() {
                 hitSlop={12}
                 onPress={() => toggleSelect(s.id)}
                 style={{
-                  width: 44, height: 44, borderRadius: 22,
+                  width: 32, height: 32, borderRadius: 16,
                   alignItems: "center", justifyContent: "center",
                   borderWidth: 2, marginLeft: 8,
                   borderColor: isSel ? theme.primary : theme.border,
                   backgroundColor: isSel ? theme.primary : "transparent",
                 }}
               >
-                {isSel && <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>✓</Text>}
+                {isSel && <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13 }}>✓</Text>}
               </Pressable>
             </View>
           );
@@ -236,6 +236,24 @@ export default function History() {
           </Card>
         )}
       </ScrollView>
+      {selected.length === 2 && (
+        <View
+          style={{
+            position: "absolute", left: 16, right: 16, bottom: insets.bottom + 80,
+            borderRadius: 20, overflow: "hidden",
+            borderWidth: 1, borderColor: theme.border,
+          }}
+        >
+          <BlurView
+            intensity={75}
+            tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={{ padding: 12 }}>
+            <Btn label="Compare selected" onPress={() => router.push(`/snapshot/compare?a=${selected[0]}&b=${selected[1]}`)} />
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

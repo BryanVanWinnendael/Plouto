@@ -8,7 +8,7 @@ import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { BackButton, Card, Muted, Title } from "@/components/ui";
 import { LineChart } from "@/components/charts";
-import { formatMoney, pctChange, toDecimal } from "@/finance/money";
+import { formatMoney, formatMoneyCompact, pctChange, toDecimal } from "@/finance/money";
 
 export default function AccountDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -66,7 +66,11 @@ export default function AccountDetail() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Balance history</Text>
-          <LineChart points={points} formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)} />
+          <LineChart
+            points={points}
+            formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)}
+            formatAxis={(v) => formatMoneyCompact(v, app.reportingCurrency, app.locale)}
+          />
         </Card>
 
         {account.notes ? <Card><Muted>{account.notes}</Muted></Card> : null}

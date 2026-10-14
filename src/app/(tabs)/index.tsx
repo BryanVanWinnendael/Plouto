@@ -9,7 +9,7 @@ import { spacing } from "@/theme/tokens";
 import { Btn, Card, Chip, GlassCard, Money, Muted, Title } from "@/components/ui";
 import { LineChart } from "@/components/charts";
 import { filterByRange, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
-import { formatMoney, formatSigned, pctChange, toDecimal } from "@/finance/money";
+import { formatMoney, formatMoneyCompact, formatSigned, pctChange, toDecimal } from "@/finance/money";
 
 const RANGES: { label: string; months: number | null }[] = [
   { label: "1M", months: 1 }, { label: "3M", months: 3 }, { label: "6M", months: 6 },
@@ -131,6 +131,7 @@ export default function Overview() {
             step={step}
             selectedIndex={sel}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
+            formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onSelect={(i) => {
               setSel(i);
               const p = series[i];
