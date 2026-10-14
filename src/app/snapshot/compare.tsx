@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Card, Chip, Muted, Title } from "@/components/ui";
+import { BackButton, Card, Chip, Muted, Title } from "@/components/ui";
 import { compareSnapshots } from "@/finance/compare";
 import { formatMoney } from "@/finance/money";
 import { toDecimal } from "@/finance/money";
@@ -30,7 +30,7 @@ export default function Compare() {
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg, padding: spacing.l }}>
         <Title>Select two snapshots</Title>
         <Muted>Open History, select two snapshots, then compare.</Muted>
-        <Pressable onPress={() => router.back()}><Text style={{ color: theme.primary, marginTop: 12 }}>‹ Back</Text></Pressable>
+        <BackButton />
       </SafeAreaView>
     );
   }
@@ -41,7 +41,7 @@ export default function Compare() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
-        <Pressable onPress={() => router.back()}><Text style={{ color: theme.primary }}>‹ Back</Text></Pressable>
+        <BackButton />
         <Title>Compare</Title>
         <Muted>{format(new Date(sa.observedAt), "d MMM yyyy")} → {format(new Date(sb.observedAt), "d MMM yyyy")}</Muted>
 

@@ -27,20 +27,27 @@ export function LineChart({
   const W = width - 64;
   const H = height;
   const PAD = 8;
+  const GUTTER_R = 62;
+  const plotX0 = 4;
+  const plotX1 = W - GUTTER_R;
   const [hover, setHover] = useState<number | null>(null);
 
-  const { coords, min, max } = useMemo(() => {
-    if (points.length === 0) return { coords: [] as { x: number; y: number }[], min: "0", max: "1" };
+  const { coords, min, mid, max } = useMemo(() => {
+    const empty = { coords: [] as { x: number; y: number }[], min: "0", mid: "0", max: "1" };
+    if (points.length === 0) return empty;
     const vals = points.map((p) => Number(toDecimal(p.value).toString()));
     let mn = Math.min(...vals);
     let mx = Math.max(...vals);
     if (mn === mx) { mn -= 1; mx += 1; }
     const n = points.length;
     const coords = vals.map((v, i) => ({
-      x: n === 1 ? W / 2 : PAD + (i * (W - PAD * 2)) / (n - 1),
+      x: n === 1 ? (plotX0 + plotX1) / 2 : plotX0 + (i * (plotX1 - plotX0)) / (n - 1),
       y: PAD + (1 - (v - mn) / (mx - mn)) * (H - PAD * 2),
     }));
-    return { coords, min: toDecimal(points.reduce((a, b) => (toDecimal(a.value).lt(toDecimal(b.value)) ? a : b)).value).toString(), max: toDecimal(points.reduce((a, b) => (toDecimal(a.value).gt(toDecimal(b.value)) ? a : b)).value).toString() };
+    const minPt = points.reduce((a, b) => (toDecimal(a.value).lt(toDecimal(b.value)) ? a : b)).value;
+    const maxPt = points.reduce((a, b) => (toDecimal(a.value).gt(toDecimal(b.value)) ? a : b)).value;
+    const midPt = toDecimal(minPt).plus(toDecimal(maxPt)).div(2).toString();
+    return { coords, min: minPt, mid: midPt, max: maxPt };
   }, [points, W, H]);
 
   if (points.length === 0) {
@@ -70,8 +77,11 @@ export function LineChart({
       <Svg width={W} height={H} accessibilityLabel="Net worth history chart">
         {/* gridlines */}
         {[0.25, 0.5, 0.75].map((f) => (
-          <Line key={f} x1={0} x2={W} y1={H * f} y2={H * f} stroke={theme.border} strokeWidth={1} />
+          <Line key={f} x1={0} x2={plotX1} y1={H * f} y2={H * f} stroke={theme.border} strokeWidth={1} />
         ))}
+        {/* Y axis line + X baseline */}
+        <Line x1={plotX1} x2={plotX1} y1={0} y2={H} stroke={theme.border} strokeWidth={1} />
+        <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
         <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         <G>
           {coords.map((c, i) => (
@@ -86,9 +96,12 @@ export function LineChart({
             />
           ))}
         </G>
-        {/* Y axis: max top-right, min bottom-right */}
+        {/* Y axis labels: max / mid / min */}
         <SvgText x={W - 2} y={12} textAnchor="end" fontSize={10} fill={theme.muted}>
           {fmt(max)}
+        </SvgText>
+        <SvgText x={W - 2} y={H / 2 + 3} textAnchor="end" fontSize={10} fill={theme.muted}>
+          {fmt(mid)}
         </SvgText>
         <SvgText x={W - 2} y={H - 4} textAnchor="end" fontSize={10} fill={theme.muted}>
           {fmt(min)}

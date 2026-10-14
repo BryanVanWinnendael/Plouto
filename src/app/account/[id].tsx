@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Card, Muted, Title } from "@/components/ui";
+import { BackButton, Card, Muted, Title } from "@/components/ui";
 import { LineChart } from "@/components/charts";
 import { formatMoney, pctChange, toDecimal } from "@/finance/money";
 
@@ -46,7 +46,7 @@ export default function AccountDetail() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
-        <Pressable onPress={() => router.back()}><Text style={{ color: theme.primary }}>‹ Back</Text></Pressable>
+        <BackButton />
         <Title style={{ marginTop: 8 }}>{account.name}</Title>
         <Muted>{account.kind} · {account.category} · {account.currency}{account.institution ? ` · ${account.institution}` : ""}</Muted>
 

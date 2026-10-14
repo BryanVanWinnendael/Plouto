@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Card, Muted, Title } from "@/components/ui";
+import { Btn, BackButton, Card, Muted, Title } from "@/components/ui";
 import { deleteSnapshot, duplicateSnapshot, saveSnapshot } from "@/db/repo";
 import { totalsForSnapshot } from "@/finance/calculations";
 import { formatMoney, parseMoneyInput } from "@/finance/money";
@@ -65,7 +65,7 @@ export default function SnapshotDetail() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
-        <Pressable onPress={() => router.back()}><Text style={{ color: theme.primary }}>‹ Back</Text></Pressable>
+        <BackButton />
         {editing ? (
           <TextInput value={title ?? ""} onChangeText={setTitle} placeholder="Title"
             placeholderTextColor={theme.muted}

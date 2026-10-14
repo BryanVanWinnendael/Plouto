@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { format } from "date-fns";
@@ -20,6 +20,8 @@ export default function History() {
   const [selected, setSelected] = useState<string[]>([]);
   const [group, setGroup] = useState<"category" | "account" | "class" | "liquidity">("category");
   const [allocSnapId, setAllocSnapId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const ordered = useMemo(
     () => [...snapshots].sort((a, b) => +new Date(a.observedAt) - +new Date(b.observedAt)),
@@ -72,6 +74,12 @@ export default function History() {
     return [...s];
   }, [ordered, accountsById]);
 
+  const filtered = useMemo(
+    () => [...ordered].reverse().filter((s) => !catFilter || s.entries.some((e) => accountsById.get(e.accountId)?.category === catFilter)),
+    [ordered, catFilter, accountsById]
+  );
+  const visible = expanded ? filtered : filtered.slice(0, PAGE_SIZE);
+
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
@@ -81,7 +89,19 @@ export default function History() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 130 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.l, paddingBottom: 60 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await refresh();
+              setRefreshing(false);
+            }}
+          />
+        }
+      >
         <Title>History</Title>
         <Muted>Actual recorded snapshots — sparse points are shown honestly.</Muted>
 
@@ -160,45 +180,64 @@ export default function History() {
           <Btn label="Compare selected" onPress={() => router.push(`/snapshot/compare?a=${selected[0]}&b=${selected[1]}`)} />
         )}
         {selected.length > 0 && (
-          <Muted style={{ marginVertical: 6 }}>Selected {selected.length}/2 — tap snapshots to select.</Muted>
+          <Muted style={{ marginVertical: 6 }}>Selected {selected.length}/2 — use the checkboxes to pick two.</Muted>
         )}
 
-        {[...ordered].reverse()
-          .filter((s) => !catFilter || s.entries.some((e) => accountsById.get(e.accountId)?.category === catFilter))
-          .map((s) => {
-            const t = totalsForSnapshot(s, accountsById, fx);
-            const isSel = selected.includes(s.id);
-            return (
+        <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Check-ins</Text>
+        {visible.map((s) => {
+          const t = totalsForSnapshot(s, accountsById, fx);
+          const isSel = selected.includes(s.id);
+          return (
+            <View
+              key={s.id}
+              style={{
+                backgroundColor: isSel ? theme.primarySoft : theme.surface,
+                borderColor: isSel ? theme.primary : theme.border,
+                borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8,
+                flexDirection: "row", alignItems: "center",
+              }}
+            >
+              <Pressable style={{ flex: 1 }} onPress={() => router.push(`/snapshot/${s.id}`)}>
+                <Text style={{ color: theme.text, fontWeight: "700" }}>{s.title || format(new Date(s.observedAt), "d MMM yyyy, HH:mm")}</Text>
+                <Muted>{s.entries.length} accounts observed · entered {format(new Date(s.createdAt), "d MMM yyyy")}</Muted>
+                <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"], marginTop: 2 }}>
+                  {formatMoney(t.netWorth, reportingCurrency, locale)}
+                </Text>
+              </Pressable>
               <Pressable
-                key={s.id}
-                onPress={() => router.push(`/snapshot/${s.id}`)}
-                onLongPress={toggleSelect.bind(null, s.id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isSel }}
+                accessibilityLabel={isSel ? `Deselect ${s.title || "snapshot"} for compare` : `Select ${s.title || "snapshot"} for compare`}
+                hitSlop={12}
+                onPress={() => toggleSelect(s.id)}
                 style={{
-                  backgroundColor: isSel ? theme.primarySoft : theme.surface,
+                  width: 44, height: 44, borderRadius: 22,
+                  alignItems: "center", justifyContent: "center",
+                  borderWidth: 2, marginLeft: 8,
                   borderColor: isSel ? theme.primary : theme.border,
-                  borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8,
+                  backgroundColor: isSel ? theme.primary : "transparent",
                 }}
               >
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Text style={{ color: theme.text, fontWeight: "700" }}>{s.title || format(new Date(s.observedAt), "d MMM yyyy, HH:mm")}</Text>
-                  <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>{formatMoney(t.netWorth, reportingCurrency, locale)}</Text>
-                </View>
-                <Muted>{s.entries.length} accounts observed · entered {format(new Date(s.createdAt), "d MMM yyyy")}</Muted>
-                <Pressable onPress={() => toggleSelect(s.id)}>
-                  <Text style={{ color: theme.primary, fontSize: 12, marginTop: 4 }}>{isSel ? "Deselect for compare" : "Select for compare"}</Text>
-                </Pressable>
+                {isSel && <Text style={{ color: "#fff", fontWeight: "800", fontSize: 18 }}>✓</Text>}
               </Pressable>
-            );
-          })}
+            </View>
+          );
+        })}
+        {!expanded && filtered.length > PAGE_SIZE && (
+          <Btn label={`Show all ${filtered.length} check-ins`} variant="ghost" onPress={() => setExpanded(true)} />
+        )}
+        {expanded && filtered.length > PAGE_SIZE && (
+          <Btn label="Show less" variant="ghost" onPress={() => setExpanded(false)} />
+        )}
         {ordered.length === 0 && (
           <Card>
             <Muted>No snapshots yet.</Muted>
             <Btn label="Create first snapshot" onPress={() => router.push("/snapshot/new")} />
           </Card>
         )}
-        <View style={{ height: 8 }} />
-        <Btn label="Refresh" variant="ghost" onPress={refresh} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const PAGE_SIZE = 10;

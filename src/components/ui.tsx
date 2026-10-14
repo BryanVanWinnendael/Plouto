@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, TextStyle, View, ViewStyle } from "react-native";
 import { BlurView } from "expo-blur";
+import { router } from "expo-router";
 import { useTheme } from "@/theme/ThemeContext";
 import { BUTTON_MIN_HEIGHT, radius, spacing } from "@/theme/tokens";
 import * as Haptics from "expo-haptics";
@@ -148,6 +149,45 @@ const styles = StyleSheet.create({
     marginBottom: spacing.m,
   },
 });
+
+/**
+ * Native-feeling liquid-glass back button: frosted capsule with chevron.
+ * Use on pushed screens instead of a plain text link.
+ */
+export function BackButton({ label = "Back", onPress }: { label?: string; onPress?: () => void }) {
+  const { theme, isDark } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={10}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        if (onPress) onPress();
+        else router.back();
+      }}
+      style={({ pressed }) => ({
+        alignSelf: "flex-start",
+        borderRadius: 999,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: theme.border,
+        opacity: pressed ? 0.7 : 1,
+        marginBottom: spacing.s,
+      })}
+    >
+      <BlurView
+        intensity={60}
+        tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8, paddingLeft: 12, paddingRight: 16 }}>
+        <Text style={{ color: theme.primary, fontSize: 20, fontWeight: "700", marginTop: -2 }}>‹</Text>
+        <Text style={{ color: theme.primary, fontSize: 16, fontWeight: "600", marginLeft: 2 }}>{label}</Text>
+      </View>
+    </Pressable>
+  );
+}
 
 /**
  * Surface ramp for native sheet screens. In dark mode the sheet sits on a
