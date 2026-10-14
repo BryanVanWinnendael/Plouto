@@ -44,8 +44,11 @@ export default function AccountDetail() {
   const stale = last ? Date.now() - +new Date((last as unknown as { at: string }).at) > 45 * 24 * 3600 * 1000 : true;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
+      >
         <BackButton />
         <Title style={{ marginTop: 8 }}>{account.name}</Title>
         <Muted>{account.kind} · {account.category} · {account.currency}{account.institution ? ` · ${account.institution}` : ""}</Muted>
@@ -76,6 +79,6 @@ export default function AccountDetail() {
         {account.notes ? <Card><Muted>{account.notes}</Muted></Card> : null}
         <View style={{ height: 8 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

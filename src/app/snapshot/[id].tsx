@@ -63,8 +63,11 @@ export default function SnapshotDetail() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
+      >
         <BackButton />
         {editing ? (
           <TextInput value={title ?? ""} onChangeText={setTitle} placeholder="Title"
@@ -163,6 +166,6 @@ export default function SnapshotDetail() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

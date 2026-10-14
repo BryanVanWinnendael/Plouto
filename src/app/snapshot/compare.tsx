@@ -39,8 +39,11 @@ export default function Compare() {
   const up = toDecimal(result.netWorthChange).gte(0);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
+      >
         <BackButton />
         <Title>Compare</Title>
         <Muted>{format(new Date(sa.observedAt), "d MMM yyyy")} → {format(new Date(sb.observedAt), "d MMM yyyy")}</Muted>
@@ -94,6 +97,6 @@ export default function Compare() {
           </View>
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

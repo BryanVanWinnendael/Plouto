@@ -27,8 +27,11 @@ export default function Onboarding() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: 16 }}
+      >
         <Text style={{ fontSize: 44, color: theme.text }}>◈</Text>
         <Title style={{ fontSize: 30, marginTop: 8 }}>Plouto</Title>
         <Text style={{ color: theme.muted, fontSize: 16, marginTop: 8, lineHeight: 24 }}>
@@ -73,6 +76,6 @@ export default function Onboarding() {
 
         <Btn label="Skip — start using the app" variant="ghost" onPress={() => finish(false)} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

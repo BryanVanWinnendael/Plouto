@@ -85,7 +85,7 @@ export default function SnapshotForm({ onClose }: { onClose: () => void }) {
     const sameMinute = snapshots.some((s) => s.observedAt.slice(0, 16) === obsDate.toISOString().slice(0, 16));
     const doSave = async () => {
       await saveSnapshot(db, {
-        title: title.trim() || null, observedAt: obsDate.toISOString(),
+        title: title.trim() || format(obsDate, "d MMM yyyy"), observedAt: obsDate.toISOString(),
         notes: notes.trim() || null, entries,
       });
       await app.refresh();

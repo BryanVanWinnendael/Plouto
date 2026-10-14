@@ -24,7 +24,6 @@ export default function Overview() {
   const app = useApp();
   const { accounts, snapshots, accountsById, fx, reportingCurrency, locale } = app;
   const [range, setRange] = useState<number | null>(null);
-  const [step, setStep] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [snapOpen, setSnapOpen] = useState(false);
@@ -141,7 +140,6 @@ export default function Overview() {
           <LineChart
             points={points}
             key={`range-${range}`}
-            step={step}
             interactive={false}
             dots={false}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
@@ -153,10 +151,7 @@ export default function Overview() {
               <Chip key={r.label} label={r.label} active={range === r.months} onPress={() => setRange(r.months)} />
             ))}
           </ScrollView>
-          <View style={{ flexDirection: "row", marginTop: 8, alignItems: "center" }}>
-            <Chip label={step ? "Step: on" : "Step: off"} active={step} onPress={() => setStep((v) => !v)} />
-            <Muted style={{ marginLeft: 8 }}>Recorded snapshots only{step ? " · carried forward as steps (not verified)" : ""}.</Muted>
-          </View>
+          <Muted style={{ marginTop: 8 }}>Recorded snapshots only.</Muted>
         </Card>
 
         <Card>
