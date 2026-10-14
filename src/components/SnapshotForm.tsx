@@ -185,7 +185,7 @@ export default function SnapshotForm({ onClose }: { onClose: () => void }) {
           </>
         ) : (
           <GlassCard>
-            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 17 }}>{title || "Untitled snapshot"}</Text>
+            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 17 }}>{title.trim() || format(observedAt, "d MMM yyyy")}</Text>
             <Muted>{observedAt.toString()} · {Object.values(included).filter(Boolean).length} accounts</Muted>
             <Text style={{ color: theme.text, fontSize: 24, fontWeight: "800", marginTop: 8 }}>
               {formatMoney(liveTotals.N, reportingCurrency, locale)}
