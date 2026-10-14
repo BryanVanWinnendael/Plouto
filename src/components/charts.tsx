@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState } from "react";
-import { Pressable, View, Text, useWindowDimensions, type GestureResponderEvent } from "react-native";
+import { Pressable, StyleSheet, View, Text, useWindowDimensions, type GestureResponderEvent } from "react-native";
 import Svg, { Polyline, Circle, Line, G, Path, Text as SvgText } from "react-native-svg";
+import { BlurView } from "expo-blur";
+import * as Haptics from "expo-haptics";
 import { useTheme } from "@/theme/ThemeContext";
 import { toDecimal } from "@/finance/money";
 
@@ -16,7 +18,7 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis,
+  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge,
 }: {
   points: ChartPoint[];
   height?: number;
@@ -27,8 +29,10 @@ export function LineChart({
   formatY?: (value: string) => string;
   /** Format raw decimal values for the short axis labels (defaults to formatY). */
   formatAxis?: (value: string) => string;
+  /** Fired when pinching past the zoom limits (1 = zoom further in, -1 = zoom out). */
+  onZoomEdge?: (dir: 1 | -1) => void;
 }) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { width } = useWindowDimensions();
   const W = width - 64;
   const H = height;
@@ -39,7 +43,7 @@ export function LineChart({
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
-  const pinch = useRef<{ d0: number; zoom0: number } | null>(null);
+  const pinch = useRef<{ d0: number; zoom0: number; lastD: number; lastFire: number } | null>(null);
 
   const n = points.length;
   const maxZoom = Math.max(1, n / 3);
@@ -108,12 +112,33 @@ export function LineChart({
   return (
     <View>
       <View
-        onMoveShouldSetResponder={(e) => maxZoom > 1 && e.nativeEvent.touches.length >= 2}
+        onMoveShouldSetResponder={(e) => e.nativeEvent.touches.length >= 2 && (maxZoom > 1 || !!onZoomEdge)}
         onResponderMove={(e) => {
           if (e.nativeEvent.touches.length < 2) return;
           const d = pinchDistance(e);
-          if (!pinch.current) pinch.current = { d0: d, zoom0: z };
-          else setZoom(pinch.current.zoom0 * (d / pinch.current.d0));
+          const now = Date.now();
+          if (!pinch.current) {
+            pinch.current = { d0: d, zoom0: z, lastD: d, lastFire: 0 };
+            return;
+          }
+          const p = pinch.current;
+          const dir = d > p.lastD + 1 ? 1 : d < p.lastD - 1 ? -1 : 0;
+          p.lastD = d;
+          const raw = p.zoom0 * (d / p.d0);
+          const clamped = Math.min(Math.max(raw, 1), maxZoom);
+          if (onZoomEdge && dir !== 0 && now - p.lastFire > 900) {
+            if (dir === 1 && raw >= maxZoom) {
+              pinch.current = { d0: d, zoom0: maxZoom, lastD: d, lastFire: now };
+              onZoomEdge(1);
+              return;
+            }
+            if (dir === -1 && clamped <= 1 && d < p.d0 * 0.7) {
+              pinch.current = { d0: d, zoom0: 1, lastD: d, lastFire: now };
+              onZoomEdge(-1);
+              return;
+            }
+          }
+          setZoom(clamped);
         }}
         onResponderRelease={() => { pinch.current = null; }}
         onResponderTerminate={() => { pinch.current = null; }}
@@ -170,26 +195,37 @@ export function LineChart({
           <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[visible.length - 1].label}</Text>
         )}
       </View>
-      {/* Selected point readout + zoom reset */}
-      {selPoint && (
-        <View style={{ marginTop: 6, alignItems: "center" }}>
-          <Text style={{ color: theme.text, fontWeight: "700", fontSize: 15, fontVariant: ["tabular-nums"] }}>
-            {fmt(selPoint.value)}
-          </Text>
-          <Text style={{ color: theme.muted, fontSize: 11 }}>{selPoint.label}</Text>
-        </View>
-      )}
-      {z > 1.01 && (
-        <View style={{ alignItems: "flex-end", marginTop: 2 }}>
-          <Pressable
-            accessibilityLabel="Reset chart zoom"
-            hitSlop={10}
-            onPress={() => { setZoom(1); setAnchor(null); setHover(null); }}
-          >
-            <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "600" }}>Reset zoom</Text>
-          </Pressable>
-        </View>
-      )}
+      {/* Fixed-height footer: readout + reset never shift layout */}
+      <View style={{ minHeight: 52, alignItems: "center", justifyContent: "center" }}>
+        {selPoint && (
+          <>
+            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 15, fontVariant: ["tabular-nums"] }}>
+              {fmt(selPoint.value)}
+            </Text>
+            <Text style={{ color: theme.muted, fontSize: 11 }}>{selPoint.label}</Text>
+          </>
+        )}
+        {z > 1.01 && (
+          <View style={{ position: "absolute", right: 0, top: 8 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Reset chart zoom"
+              hitSlop={10}
+              onPress={() => { setZoom(1); setAnchor(null); setHover(null); }}
+              style={{ borderRadius: 999, overflow: "hidden", borderWidth: 1, borderColor: theme.border }}
+            >
+              <BlurView
+                intensity={60}
+                tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={{ paddingVertical: 7, paddingHorizontal: 12 }}>
+                <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "700" }}>Reset zoom</Text>
+              </View>
+            </Pressable>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -232,7 +268,10 @@ export function DonutChart({
     };
   });
 
-  const toggle = (i: number) => setSel((prev) => (prev === i ? null : i));
+  const toggle = (i: number) => {
+    Haptics.selectionAsync().catch(() => {});
+    setSel((prev) => (prev === i ? null : i));
+  };
 
   return (
     <View style={{ alignItems: "center" }}>

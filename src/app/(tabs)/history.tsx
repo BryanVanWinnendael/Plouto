@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import { format } from "date-fns";
@@ -16,7 +16,6 @@ import { formatMoney, formatMoneyCompact, sumDecimal } from "@/finance/money";
 
 export default function History() {
   const { theme, isDark } = useTheme();
-  const insets = useSafeAreaInsets();
   const { snapshots, accounts, accountsById, fx, reportingCurrency, locale, refresh } = useApp();
   const [catFilter, setCatFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -92,7 +91,7 @@ export default function History() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? 220 : 60 }}
+        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? 140 : 60 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -239,7 +238,7 @@ export default function History() {
       {selected.length === 2 && (
         <View
           style={{
-            position: "absolute", left: 16, right: 16, bottom: insets.bottom + 80,
+            position: "absolute", left: 16, right: 16, bottom: 12,
             borderRadius: 20, overflow: "hidden",
             borderWidth: 1, borderColor: theme.border,
           }}

@@ -16,6 +16,7 @@ const RANGES: { label: string; months: number | null }[] = [
   { label: "1Y", months: 12 }, { label: "3Y", months: 36 }, { label: "5Y", months: 60 },
   { label: "All", months: null },
 ];
+const RANGE_ORDER: (number | null)[] = RANGES.map((r) => r.months);
 
 export default function Overview() {
   const { theme } = useTheme();
@@ -26,6 +27,16 @@ export default function Overview() {
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [sel, setSel] = useState<number | null>(null);
+
+  /** Pinch past the chart limits steps the time range (zoom in = shorter range). */
+  const stepRange = (dir: 1 | -1) => {
+    setRange((cur) => {
+      const i = RANGE_ORDER.findIndex((m) => m === cur);
+      const ni = Math.min(RANGE_ORDER.length - 1, Math.max(0, i + (dir === 1 ? -1 : 1)));
+      return RANGE_ORDER[ni];
+    });
+    setSel(null);
+  };
 
   const ordered = useMemo(
     () => [...snapshots].sort((a, b) => +new Date(a.observedAt) - +new Date(b.observedAt)),
@@ -128,10 +139,12 @@ export default function Overview() {
           </View>
           <LineChart
             points={points}
+            key={`range-${range}`}
             step={step}
             selectedIndex={sel}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
+            onZoomEdge={stepRange}
             onSelect={(i) => {
               setSel(i);
               const p = series[i];
