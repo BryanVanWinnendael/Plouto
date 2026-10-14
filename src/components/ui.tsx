@@ -190,13 +190,12 @@ export function BackButton({ label = "Back", onPress }: { label?: string; onPres
 }
 
 /**
- * Surface ramp for native sheet screens. In dark mode the sheet sits on a
- * lifted background so it reads as a surface above the dimmed content
- * behind it (pure black-on-black is invisible). Cards and inputs inside a
- * sheet shift one level up the ramp to keep their contrast.
+ * Surface ramp for native sheet screens. The sheet background stays transparent
+ * so Apple's glass material shows through (Maps-style); cards and inputs are
+ * solid floating tiles shifted one level up the ramp to keep their contrast.
  */
 export function useSheet() {
   const { theme, isDark } = useTheme();
-  if (!isDark) return { bg: theme.bg, surface: theme.surface, surface2: theme.surface2 };
-  return { bg: "#1C1C1E", surface: "#2C2C2E", surface2: "#3A3A3E" };
+  if (!isDark) return { bg: "transparent", surface: theme.surface, surface2: theme.surface2 };
+  return { bg: "transparent", surface: "#2C2C2E", surface2: "#3A3A3E" };
 }

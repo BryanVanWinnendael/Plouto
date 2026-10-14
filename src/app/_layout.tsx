@@ -51,7 +51,7 @@ function ThemedStack() {
           name="snapshot/new"
           options={{
             presentation: "formSheet",
-            contentStyle: { backgroundColor: isDark ? "#1C1C1E" : "#F7F8F6" },
+            contentStyle: { backgroundColor: "transparent" },
             sheetAllowedDetents: [0.5, 1.0],
             sheetInitialDetentIndex: 1,
             sheetGrabberVisible: true,
@@ -66,7 +66,7 @@ function ThemedStack() {
           name="account/new"
           options={{
             presentation: "formSheet",
-            contentStyle: { backgroundColor: isDark ? "#1C1C1E" : "#F7F8F6" },
+            contentStyle: { backgroundColor: "transparent" },
             sheetAllowedDetents: [0.5, 1.0],
             sheetInitialDetentIndex: 1,
             sheetGrabberVisible: true,

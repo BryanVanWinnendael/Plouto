@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, DatePicker } from "@expo/ui/swift-ui";
 import { environment } from "@expo/ui/swift-ui/modifiers";
+import { BlurView } from "expo-blur";
 import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
@@ -104,7 +105,12 @@ export default function NewSnapshot() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sheet.bg }}>
-      <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s, backgroundColor: sheet.bg }}>
+      <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s }}>
+        <BlurView
+          intensity={70}
+          tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+          style={StyleSheet.absoluteFill}
+        />
         <Title>{review ? "Review snapshot" : "New snapshot"}</Title>
         <Muted>Only included accounts are recorded. Absent ≠ zero.</Muted>
       </View>
@@ -195,7 +201,7 @@ export default function NewSnapshot() {
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: Math.max(insets.bottom, spacing.l),
+          paddingBottom: insets.bottom + 8,
         }}
       >
         {!review ? (

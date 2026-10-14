@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useApp } from "@/store/AppContext";
+import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Muted, Title, useSheet } from "@/components/ui";
@@ -13,7 +14,7 @@ import { DEFAULT_ACCOUNT_CATEGORIES } from "@/finance/types";
 /** Native modal screen for creating / editing an account (replaces the old raw Modal). */
 export default function AccountForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const sheet = useSheet();
   const insets = useSafeAreaInsets();
   const db = useSQLiteContext();
@@ -51,7 +52,12 @@ export default function AccountForm() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: sheet.bg }}>
-      <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s, backgroundColor: sheet.bg }}>
+      <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s }}>
+        <BlurView
+          intensity={70}
+          tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Pressable onPress={() => router.back()} hitSlop={12}>
             <Text style={{ color: theme.primary, fontSize: 16 }}>Cancel</Text>
@@ -173,7 +179,7 @@ export default function AccountForm() {
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: Math.max(insets.bottom, spacing.l),
+          paddingBottom: insets.bottom + 8,
         }}
       >
         <Btn label={existing ? "Save changes" : "Create account"} onPress={save} />
