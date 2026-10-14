@@ -1,25 +1,46 @@
 {
   "expo": {
     "name": "Plouto",
-    "slug": "Plouto",
+    "slug": "plouto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "plouto",
+    "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+      "supportsTablet": true,
+      "bundleIdentifier": "app.plouto.wealth",
+      "buildNumber": "2",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Plouto uses Face ID to lock your financial data on this device."
       },
-      "predictiveBackGestureEnabled": false
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "da059e17-40d3-42bf-af14-ca33dec31cc8"
+      }
     }
   }
 }
