@@ -18,7 +18,7 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge,
+  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge, interactive = true,
 }: {
   points: ChartPoint[];
   height?: number;
@@ -31,6 +31,8 @@ export function LineChart({
   formatAxis?: (value: string) => string;
   /** Fired when pinching past the zoom limits (1 = zoom further in, -1 = zoom out). */
   onZoomEdge?: (dir: 1 | -1) => void;
+  /** When false, points are not tappable (zoom still works). Defaults to true. */
+  interactive?: boolean;
 }) {
   const { theme, isDark } = useTheme();
   const { width } = useWindowDimensions();
@@ -90,8 +92,8 @@ export function LineChart({
     path = coords.map((c) => `${c.x},${c.y}`).join(" ");
   }
 
-  const selGlobal = selectedIndex ?? null;
-  const selLocalRaw = selGlobal != null ? selGlobal - start : hover;
+  const selGlobal = interactive ? (selectedIndex ?? null) : null;
+  const selLocalRaw = selGlobal != null ? selGlobal - start : interactive ? hover : null;
   const selLocal = selLocalRaw != null && selLocalRaw >= 0 && selLocalRaw < visible.length ? selLocalRaw : null;
   const fmt = (v: string) => (formatY ? formatY(v) : v);
   const fmtAxis = (v: string) => (formatAxis ? formatAxis(v) : fmt(v));
@@ -177,16 +179,18 @@ export function LineChart({
           </SvgText>
         </Svg>
         {/* touch targets */}
-        <View style={{ flexDirection: "row", marginTop: -H, height: H }}>
-          {coords.map((_, i) => (
-            <Pressable
-              key={i}
-              accessibilityLabel={`Point ${visible[i].label}: ${fmt(visible[i].value)}`}
-              style={{ flex: 1 }}
-              onPress={() => handlePress(i)}
-            />
-          ))}
-        </View>
+        {interactive && (
+          <View style={{ flexDirection: "row", marginTop: -H, height: H }}>
+            {coords.map((_, i) => (
+              <Pressable
+                key={i}
+                accessibilityLabel={`Point ${visible[i].label}: ${fmt(visible[i].value)}`}
+                style={{ flex: 1 }}
+                onPress={() => handlePress(i)}
+              />
+            ))}
+          </View>
+        )}
       </View>
       {/* X axis: first / last visible observation dates */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>

@@ -92,7 +92,7 @@ export default function History() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 170 : 60 }}
+        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 110 : 60 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -239,7 +239,7 @@ export default function History() {
       {selected.length === 2 && (
         <View
           style={{
-            position: "absolute", left: 16, right: 16, bottom: insets.bottom + 64,
+            position: "absolute", left: 16, right: 16, bottom: insets.bottom + 12,
             borderRadius: 20, overflow: "hidden",
             borderWidth: 1, borderColor: theme.border,
           }}

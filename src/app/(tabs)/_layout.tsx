@@ -5,7 +5,7 @@ import { useApp } from "@/store/AppContext";
 import { useEffect } from "react";
 
 export default function TabsLayout() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { ready, onboarded } = useApp();
 
   useEffect(() => {
@@ -13,7 +13,10 @@ export default function TabsLayout() {
   }, [ready, onboarded]);
 
   return (
-    <NativeTabs tintColor={theme.primary}>
+    <NativeTabs
+      tintColor={theme.primary}
+      blurEffect={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+    >
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Icon sf="chart.pie" />
         <NativeTabs.Trigger.Label>Overview</NativeTabs.Trigger.Label>

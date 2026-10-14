@@ -26,7 +26,6 @@ export default function Overview() {
   const [step, setStep] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [sel, setSel] = useState<number | null>(null);
 
   /** Pinch past the chart limits steps the time range (zoom in = shorter range). */
   const stepRange = (dir: 1 | -1) => {
@@ -35,7 +34,6 @@ export default function Overview() {
       const ni = Math.min(RANGE_ORDER.length - 1, Math.max(0, i + (dir === 1 ? -1 : 1)));
       return RANGE_ORDER[ni];
     });
-    setSel(null);
   };
 
   const ordered = useMemo(
@@ -141,19 +139,14 @@ export default function Overview() {
             points={points}
             key={`range-${range}`}
             step={step}
-            selectedIndex={sel}
+            interactive={false}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onZoomEdge={stepRange}
-            onSelect={(i) => {
-              setSel(i);
-              const p = series[i];
-              if (p) router.push(`/snapshot/${p.snapshotId}`);
-            }}
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
             {RANGES.map((r) => (
-              <Chip key={r.label} label={r.label} active={range === r.months} onPress={() => { setRange(r.months); setSel(null); }} />
+              <Chip key={r.label} label={r.label} active={range === r.months} onPress={() => setRange(r.months)} />
             ))}
           </ScrollView>
           <View style={{ flexDirection: "row", marginTop: 8, alignItems: "center" }}>
