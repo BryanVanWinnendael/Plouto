@@ -199,7 +199,7 @@ export default function SnapshotForm({ onClose }: { onClose: () => void }) {
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: 34,
+          paddingBottom: 12,
         }}
       >
         {!review ? (

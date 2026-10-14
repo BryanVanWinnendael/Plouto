@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Alert, Pressable, ScrollView, Share, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, Toggle } from "@expo/ui/swift-ui";
 import { environment, tint } from "@expo/ui/swift-ui/modifiers";
@@ -80,8 +79,11 @@ export default function Settings() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
+      >
         <Title>Settings</Title>
         <Muted>Private by design — everything stays on this device.</Muted>
 
@@ -169,6 +171,7 @@ export default function Settings() {
           />
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
+

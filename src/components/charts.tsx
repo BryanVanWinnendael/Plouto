@@ -18,7 +18,7 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge, interactive = true,
+  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge, interactive = true, dots = true,
 }: {
   points: ChartPoint[];
   height?: number;
@@ -33,6 +33,8 @@ export function LineChart({
   onZoomEdge?: (dir: 1 | -1) => void;
   /** When false, points are not tappable (zoom still works). Defaults to true. */
   interactive?: boolean;
+  /** Show data point dots. Defaults to true. */
+  dots?: boolean;
 }) {
   const { theme, isDark } = useTheme();
   const { width } = useWindowDimensions();
@@ -155,7 +157,7 @@ export function LineChart({
           <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
           <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
           <G>
-            {coords.map((c, i) => (
+            {dots && coords.map((c, i) => (
               <Circle
                 key={i}
                 cx={c.x}

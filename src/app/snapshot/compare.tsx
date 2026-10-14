@@ -40,7 +40,7 @@ export default function Compare() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
         <BackButton />
         <Title>Compare</Title>
         <Muted>{format(new Date(sa.observedAt), "d MMM yyyy")} → {format(new Date(sb.observedAt), "d MMM yyyy")}</Muted>

@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
 import { router } from "expo-router";
 import { useApp } from "@/store/AppContext";
@@ -83,8 +82,11 @@ export default function Accounts() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 130 }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
+      >
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Title>Accounts</Title>
           <Pressable onPress={() => setShowArchived((v) => !v)}>
@@ -135,6 +137,7 @@ export default function Accounts() {
       <SheetHost open={acctOpen} onOpenChange={setAcctOpen}>
         <AccountForm accountId={editingId} onClose={() => setAcctOpen(false)} />
       </SheetHost>
-    </SafeAreaView>
+    </View>
   );
 }
+

@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
@@ -70,9 +69,10 @@ export default function Overview() {
   }, [accounts, ordered]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await app.refresh(); setRefreshing(false); }} />}
       >
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
@@ -143,6 +143,7 @@ export default function Overview() {
             key={`range-${range}`}
             step={step}
             interactive={false}
+            dots={false}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onZoomEdge={stepRange}
@@ -202,6 +203,7 @@ export default function Overview() {
       <SheetHost open={snapOpen} onOpenChange={setSnapOpen}>
         <SnapshotForm onClose={() => setSnapOpen(false)} />
       </SheetHost>
-    </SafeAreaView>
+    </View>
   );
 }
+

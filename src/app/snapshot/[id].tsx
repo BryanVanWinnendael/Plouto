@@ -64,7 +64,7 @@ export default function SnapshotDetail() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
         <BackButton />
         {editing ? (
           <TextInput value={title ?? ""} onChangeText={setTitle} placeholder="Title"

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import { format } from "date-fns";
@@ -93,9 +93,10 @@ export default function History() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 110 : 60 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 110 : 16 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -260,8 +261,9 @@ export default function History() {
           </View>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const PAGE_SIZE = 10;
+

@@ -15,6 +15,7 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       tintColor={theme.primary}
+      backgroundColor="transparent"
       blurEffect={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
     >
       <NativeTabs.Trigger name="index">
@@ -36,3 +37,4 @@ export default function TabsLayout() {
     </NativeTabs>
   );
 }
+

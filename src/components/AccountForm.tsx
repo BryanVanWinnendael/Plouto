@@ -175,7 +175,7 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
         style={{
           paddingHorizontal: spacing.l,
           paddingTop: spacing.s,
-          paddingBottom: 34,
+          paddingBottom: 12,
         }}
       >
         <Btn label={existing ? "Save changes" : "Create account"} onPress={save} />

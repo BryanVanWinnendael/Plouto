@@ -45,7 +45,7 @@ export default function AccountDetail() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }}>
-      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: spacing.l, paddingBottom: 40 }}>
         <BackButton />
         <Title style={{ marginTop: 8 }}>{account.name}</Title>
         <Muted>{account.kind} · {account.category} · {account.currency}{account.institution ? ` · ${account.institution}` : ""}</Muted>
