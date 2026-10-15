@@ -18,12 +18,10 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, onSelect, selectedIndex, step = false, formatY, formatAxis, onZoomEdge, interactive = true, dots = true,
+  points, height = 190, step = false, formatY, formatAxis, onZoomEdge, interactive = true, dots = true,
 }: {
   points: ChartPoint[];
   height?: number;
-  onSelect?: (i: number) => void;
-  selectedIndex?: number | null;
   step?: boolean;
   /** Format raw decimal values for the selection readout (e.g. currency). */
   formatY?: (value: string) => string;
@@ -96,23 +94,21 @@ export function LineChart({
     path = coords.map((c) => `${c.x},${c.y}`).join(" ");
   }
 
-  const selGlobal = interactive ? (selectedIndex ?? null) : null;
-  const selLocalRaw = selGlobal != null ? selGlobal - start : interactive ? hover : null;
-  const selLocal = selLocalRaw != null && selLocalRaw >= 0 && selLocalRaw < visible.length ? selLocalRaw : null;
+  const selLocal = hover != null && hover >= 0 && hover < visible.length ? hover : null;
   const fmt = (v: string) => (formatY ? formatY(v) : v);
   const fmtAxis = (v: string) => (formatAxis ? formatAxis(v) : fmt(v));
-  const selPoint = selLocal != null ? visible[selLocal] : null;
 
   // IBKR-style crosshair: vertical guide + value tag pinned to the selected point.
-  let cross: { cx: number; tx: number; ty: number; tw: number; label: string } | null = null;
+  let cross: { cx: number; tx: number; ty: number; tw: number; label: string; date: string } | null = null;
   if (selLocal != null && coords[selLocal]) {
     const cx = coords[selLocal].x;
     const cy = coords[selLocal].y;
     const label = fmt(visible[selLocal].value);
-    const tw = label.length * 6.5 + 18;
+    const date = visible[selLocal].label;
+    const tw = Math.max(label.length, date.length) * 6.5 + 20;
     const tx = Math.min(Math.max(cx, tw / 2 + 2), plotX1 - tw / 2 - 2);
-    const ty = cy - 36 < 6 ? cy + 12 : cy - 36;
-    cross = { cx, tx, tw, ty, label };
+    const ty = cy - 54 < 6 ? cy + 12 : cy - 54;
+    cross = { cx, tx, tw, ty, label, date };
   }
 
   const handlePress = (i: number) => {
@@ -120,7 +116,6 @@ export function LineChart({
     const g = start + i;
     setHover(i);
     setAnchor(g);
-    onSelect?.(g);
   };
 
   const pinchDistance = (e: GestureResponderEvent) => {
@@ -143,6 +138,18 @@ export function LineChart({
           const t = e.nativeEvent.touches[0];
           if (t) scrub.current = { x0: t.pageX, y0: t.pageY };
           return false;
+        }}
+        onMoveShouldSetResponderCapture={(e) => {
+          // Capture phase runs before children (tap targets), so a horizontal
+          // drag reliably becomes a scrub instead of a tap.
+          if (e.nativeEvent.touches.length >= 2) return false;
+          if (!interactive) return false;
+          const s = scrub.current;
+          if (!s) return false;
+          const t = e.nativeEvent.touches[0];
+          const dx = Math.abs(t.pageX - s.x0);
+          const dy = Math.abs(t.pageY - s.y0);
+          return dx > 14 && dx > dy * 1.4;
         }}
         onMoveShouldSetResponder={(e) => {
           if (e.nativeEvent.touches.length >= 2) return maxZoom > 1 || !!onZoomEdge;
@@ -216,7 +223,7 @@ export function LineChart({
                 stroke={theme.primary} strokeWidth={1} strokeDasharray="4 3" opacity={0.55}
               />
               <Rect
-                x={cross.tx - cross.tw / 2} y={cross.ty} width={cross.tw} height={24} rx={7}
+                x={cross.tx - cross.tw / 2} y={cross.ty} width={cross.tw} height={42} rx={8}
                 fill={theme.primary}
               />
               <SvgText
@@ -224,6 +231,12 @@ export function LineChart({
                 fontSize={11} fontWeight="700" fill={isDark ? "#000000" : "#FFFFFF"}
               >
                 {cross.label}
+              </SvgText>
+              <SvgText
+                x={cross.tx} y={cross.ty + 30} textAnchor="middle"
+                fontSize={9} fill={isDark ? "#000000" : "#FFFFFF"} opacity={0.75}
+              >
+                {cross.date}
               </SvgText>
             </G>
           )}
@@ -251,7 +264,7 @@ export function LineChart({
             {fmtAxis(min)}
           </SvgText>
         </Svg>
-        {/* touch targets */}
+        {/* touch targets for taps (drags are captured by the container above) */}
         {interactive && (
           <View style={{ flexDirection: "row", marginTop: -H, height: H }}>
             {coords.map((_, i) => (
@@ -264,26 +277,8 @@ export function LineChart({
             ))}
           </View>
         )}
-      </View>
-      {/* X axis: first / last visible observation dates */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
-        <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[0].label}</Text>
-        {visible.length > 1 && (
-          <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[visible.length - 1].label}</Text>
-        )}
-      </View>
-      {/* Fixed-height footer: readout + reset never shift layout */}
-      <View style={{ minHeight: 52, alignItems: "center", justifyContent: "center" }}>
-        {selPoint && (
-          <>
-            <Text style={{ color: theme.text, fontWeight: "700", fontSize: 15, fontVariant: ["tabular-nums"] }}>
-              {fmt(selPoint.value)}
-            </Text>
-            <Text style={{ color: theme.muted, fontSize: 11 }}>{selPoint.label}</Text>
-          </>
-        )}
         {z > 1.01 && (
-          <View style={{ position: "absolute", right: 0, top: 8 }}>
+          <View style={{ position: "absolute", top: 6, left: 6 }}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Reset chart zoom"
@@ -304,6 +299,13 @@ export function LineChart({
               </View>
             </Pressable>
           </View>
+        )}
+      </View>
+      {/* X axis: first / last visible observation dates */}
+      <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
+        <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[0].label}</Text>
+        {visible.length > 1 && (
+          <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[visible.length - 1].label}</Text>
         )}
       </View>
     </View>

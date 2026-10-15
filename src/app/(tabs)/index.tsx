@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Card, Chip, Money, Muted, Title } from "@/components/ui";
+import { Btn, Card, Money, Muted, Title } from "@/components/ui";
 import { SheetHost } from "@/components/SheetHost";
 import SnapshotForm from "@/components/SnapshotForm";
 import { LineChart } from "@/components/charts";
@@ -157,11 +158,35 @@ export default function Overview() {
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onZoomEdge={stepRange}
           />
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-            {RANGES.map((r) => (
-              <Chip key={r.label} label={r.label} active={range === r.months} onPress={() => setRange(r.months)} />
-            ))}
-          </ScrollView>
+          <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
+            {RANGES.map((r) => {
+              const isActive = range === r.months;
+              return (
+                <Pressable
+                  key={r.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${r.label} range`}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    setRange(r.months);
+                  }}
+                  style={{
+                    flex: 1, paddingVertical: 9, borderRadius: 999,
+                    backgroundColor: isActive ? theme.primarySoft : theme.surface2,
+                    borderWidth: 1, borderColor: isActive ? theme.primary : theme.border,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{ color: isActive ? theme.text : theme.muted, fontWeight: "600", fontSize: 11 }}
+                  >
+                    {r.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
           <Muted style={{ marginTop: 8 }}>Recorded snapshots only.</Muted>
         </View>
 

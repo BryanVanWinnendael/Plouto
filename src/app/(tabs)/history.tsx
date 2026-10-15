@@ -118,7 +118,6 @@ export default function History() {
             points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
-            onSelect={(i) => { const p = series[i]; if (p) router.push(`/snapshot/${p.snapshotId}`); }}
           />
           <View style={{ flexDirection: "row", marginTop: 8 }}>
             <View style={{ flex: 1 }}>
