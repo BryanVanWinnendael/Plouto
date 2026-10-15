@@ -134,7 +134,6 @@ export function LineChart({
   return (
     <View>
       <View
-        onTouchStart={() => onTouchStateChange?.(true)}
         onStartShouldSetResponder={() => interactive}
         // Never yield: touches starting on the chart belong to the chart,
         // even vertical ones. Scroll the page from anywhere else.
@@ -147,6 +146,8 @@ export function LineChart({
           pinchBase.current = null;
           gestureLocked.current = false;
           tickIndex.current = -1;
+          // Claim is established: now safe to lock page scroll.
+          onTouchStateChange?.(true);
         }}
         onResponderMove={(e) => {
           const touches = e.nativeEvent.touches;
