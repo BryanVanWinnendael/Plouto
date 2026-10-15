@@ -11,11 +11,11 @@ import { spacing } from "@/theme/tokens";
 import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
 import { SheetHost } from "@/components/SheetHost";
 import SnapshotForm from "@/components/SnapshotForm";
-import { DonutChart, LineChart } from "@/components/charts";
-import { historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
+import { DonutChart } from "@/components/charts";
+import { latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { allocationBy, positionsForAllocation } from "@/finance/allocation";
 import { yearlySummaries } from "@/finance/yearly";
-import { formatMoney, formatMoneyCompact, sumDecimal } from "@/finance/money";
+import { formatMoney, sumDecimal } from "@/finance/money";
 
 export default function History() {
   const { theme, isDark } = useTheme();
@@ -33,8 +33,6 @@ export default function History() {
     () => [...snapshots].sort((a, b) => +new Date(a.observedAt) - +new Date(b.observedAt)),
     [snapshots]
   );
-  const series = useMemo(() => historySeries(ordered, accountsById, fx), [ordered, accountsById, fx]);
-
   const lkp = useMemo(() => latestKnownPosition(ordered, accounts, fx), [ordered, accounts, fx]);
   const allocSnap = allocSnapId ? ordered.find((s) => s.id === allocSnapId) : null;
 
@@ -96,6 +94,7 @@ export default function History() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 110 : 16 }}
         refreshControl={
@@ -112,16 +111,7 @@ export default function History() {
         <Title>History</Title>
         <Muted>Actual recorded snapshots — sparse points are shown honestly.</Muted>
 
-        <View style={{ marginBottom: spacing.l }}>
-          <LineChart
-            height={260}
-            points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
-            formatY={(v) => formatMoney(v, reportingCurrency, locale)}
-            formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
-          />
-        </View>
-
-        <Card>
+        <View style={{ marginBottom: spacing.l, marginTop: spacing.s }}>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Allocation</Text>
           <Muted>Account-level allocation (not security-level) unless you classify holdings. Denominator: total assets.</Muted>
           <View style={{ flexDirection: "row", marginVertical: 8 }}>
@@ -144,7 +134,7 @@ export default function History() {
           ) : (
             <Muted>No asset observations yet.</Muted>
           )}
-        </Card>
+        </View>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Yearly breakdown</Text>

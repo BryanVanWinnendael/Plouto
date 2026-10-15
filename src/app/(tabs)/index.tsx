@@ -72,6 +72,7 @@ export default function Overview() {
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await app.refresh(); setRefreshing(false); }} />}
       >

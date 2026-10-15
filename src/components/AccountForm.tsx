@@ -64,6 +64,7 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
         <Muted>You can create multiple accounts of the same type.</Muted>
       </View>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }}
         keyboardShouldPersistTaps="handled"
       >

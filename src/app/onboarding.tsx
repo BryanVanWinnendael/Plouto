@@ -30,6 +30,7 @@ export default function Onboarding() {
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: 16 }}
       >
         <Text style={{ fontSize: 44, color: theme.text }}>◈</Text>

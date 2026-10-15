@@ -112,7 +112,7 @@ export default function SnapshotForm({ onClose }: { onClose: () => void }) {
         <Title>{review ? "Review snapshot" : "New snapshot"}</Title>
         <Muted>Only included accounts are recorded. Absent ≠ zero.</Muted>
       </View>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }} keyboardShouldPersistTaps="handled">
         {!review ? (
           <>
             <GlassCard>
