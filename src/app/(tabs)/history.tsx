@@ -113,7 +113,7 @@ export default function History() {
 
         <View style={{ marginBottom: spacing.l, marginTop: spacing.s }}>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Allocation</Text>
-          <Muted>Account-level allocation (not security-level) unless you classify holdings. Denominator: total assets.</Muted>
+          <Muted>Denominator: total assets.</Muted>
           <View style={{ flexDirection: "row", marginVertical: 8 }}>
             {(["category", "account", "class", "liquidity"] as const).map((g) => (
               <Chip key={g} label={g} active={group === g} onPress={() => setGroup(g)} />

@@ -50,6 +50,8 @@ export function LineChart({
   // Touch state persists across moves within one gesture (plain refs, not hooks-in-callbacks).
   const pinchBase = useRef<{ d0: number; zoom0: number; lastFire: number } | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const gestureLocked = useRef(false);
+  const tickIndex = useRef(-1);
 
   const indexFromLocalX = (lx: number) => {
     const m = visible.length;
@@ -131,13 +133,15 @@ export function LineChart({
     <View>
       <View
         onStartShouldSetResponder={() => interactive}
-        onResponderTerminationRequest={() => true}
+        onResponderTerminationRequest={() => !gestureLocked.current}
         onResponderGrant={(e) => {
           const t = e.nativeEvent.touches[0];
           if (t) {
             touchStart.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
           }
           pinchBase.current = null;
+          gestureLocked.current = false;
+          tickIndex.current = -1;
         }}
         onResponderMove={(e) => {
           const touches = e.nativeEvent.touches;
@@ -149,6 +153,7 @@ export function LineChart({
             const now = Date.now();
             if (!pinchBase.current) {
               pinchBase.current = { d0: d, zoom0: z, lastFire: 0 };
+              gestureLocked.current = true;
               return;
             }
             const b = pinchBase.current;
@@ -172,13 +177,29 @@ export function LineChart({
             return;
           }
           if (!interactive) return;
-          const i = indexFromLocalX(e.nativeEvent.locationX);
+          const t = touches[0];
+          const lx = e.nativeEvent.locationX;
+          const i = indexFromLocalX(lx);
+          const s = touchStart.current;
+          if (s && t) {
+            const dx = Math.abs(t.pageX - s.x);
+            const dy = Math.abs(t.pageY - s.y);
+            if (!gestureLocked.current && dx > 10 && dx > dy * 1.2) {
+              gestureLocked.current = true;
+            }
+          }
+          if (gestureLocked.current && tickIndex.current !== i) {
+            tickIndex.current = i;
+            Haptics.selectionAsync().catch(() => {});
+          }
           setHover((prev) => (prev === i ? prev : i));
         }}
         onResponderRelease={(e) => {
           const s = touchStart.current;
           pinchBase.current = null;
           touchStart.current = null;
+          gestureLocked.current = false;
+          tickIndex.current = -1;
           if (!interactive || !s) return;
           const lx = e.nativeEvent.locationX;
           const ly = e.nativeEvent.locationY;
@@ -196,6 +217,8 @@ export function LineChart({
         onResponderTerminate={() => {
           pinchBase.current = null;
           touchStart.current = null;
+          gestureLocked.current = false;
+          tickIndex.current = -1;
           setHover(null);
         }}
       >
