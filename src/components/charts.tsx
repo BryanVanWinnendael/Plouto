@@ -48,6 +48,75 @@ export function LineChart({
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
 
+  // All hooks below run on every render (before any early return).
+  const visCountRef = useRef(0);
+  const zoomRef = useRef(1);
+  const maxZoomRef = useRef(1);
+  const edgeRef = useRef(onZoomEdge);
+  const interactiveRef = useRef(true);
+  const pinchStart = useRef({ zoom0: 1, lastFire: 0 });
+
+  const indexFromLocalX = (lx: number) => {
+    const m = visCountRef.current;
+    if (m <= 1) return 0;
+    const seg = (plotX1 - DOT_MARGIN - plotX0) / (m - 1);
+    return Math.min(m - 1, Math.max(0, Math.round((lx - plotX0) / seg)));
+  };
+
+  // Press-hold-drag scrub: horizontal-dominant pans move the crosshair,
+  // vertical pans fail so the parent ScrollView keeps scrolling.
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-14, 14])
+        .failOffsetY([-10, 10])
+        .onStart((e) => {
+          if (!interactiveRef.current) return;
+          Haptics.selectionAsync().catch(() => {});
+          setHover(indexFromLocalX(e.x));
+        })
+        .onUpdate((e) => {
+          if (!interactiveRef.current) return;
+          const i = indexFromLocalX(e.x);
+          setHover((prev) => (prev === i ? prev : i));
+        }),
+    []
+  );
+
+  const pinchGesture = useMemo(
+    () =>
+      Gesture.Pinch()
+        .onStart(() => {
+          pinchStart.current = { zoom0: zoomRef.current, lastFire: pinchStart.current.lastFire };
+        })
+        .onUpdate((e) => {
+          const now = Date.now();
+          const st = pinchStart.current;
+          const raw = st.zoom0 * e.scale;
+          const mz = maxZoomRef.current;
+          const clamped = Math.min(Math.max(raw, 1), mz);
+          const edge = edgeRef.current;
+          if (edge && now - st.lastFire > 900) {
+            if (e.scale >= 1 && raw >= mz) {
+              st.lastFire = now;
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+              edge(1);
+              return;
+            }
+            if (e.scale < 0.7 && clamped <= 1) {
+              st.lastFire = now;
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+              edge(-1);
+              return;
+            }
+          }
+          setZoom(clamped);
+        }),
+    []
+  );
+
+  const composed = useMemo(() => Gesture.Exclusive(pinchGesture, pan), [pinchGesture, pan]);
+
   const n = points.length;
   const maxZoom = Math.max(1, n / 3);
   const z = Math.min(Math.max(zoom, 1), maxZoom);
@@ -117,79 +186,12 @@ export function LineChart({
     setAnchor(g);
   };
 
-  // Mirror render values for gesture callbacks (gestures are created once).
-  const visCountRef = useRef(0);
+  // Mirror render values for gesture callbacks (refs update every render).
   visCountRef.current = visible.length;
-  const zoomRef = useRef(1);
   zoomRef.current = z;
-  const maxZoomRef = useRef(1);
   maxZoomRef.current = maxZoom;
-  const edgeRef = useRef(onZoomEdge);
   edgeRef.current = onZoomEdge;
-  const interactiveRef = useRef(true);
   interactiveRef.current = interactive;
-  const pinchStart = useRef({ zoom0: 1, lastFire: 0 });
-
-  const indexFromLocalX = (lx: number) => {
-    const m = visCountRef.current;
-    if (m <= 1) return 0;
-    const seg = (plotX1 - DOT_MARGIN - plotX0) / (m - 1);
-    return Math.min(m - 1, Math.max(0, Math.round((lx - plotX0) / seg)));
-  };
-
-  // Press-hold-drag scrub: horizontal-dominant pans move the crosshair,
-  // vertical pans fail so the parent ScrollView keeps scrolling.
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX([-14, 14])
-        .failOffsetY([-10, 10])
-        .onStart((e) => {
-          if (!interactiveRef.current) return;
-          Haptics.selectionAsync().catch(() => {});
-          setHover(indexFromLocalX(e.x));
-        })
-        .onUpdate((e) => {
-          if (!interactiveRef.current) return;
-          const i = indexFromLocalX(e.x);
-          setHover((prev) => (prev === i ? prev : i));
-        }),
-    []
-  );
-
-  const pinchGesture = useMemo(
-    () =>
-      Gesture.Pinch()
-        .onStart(() => {
-          pinchStart.current = { zoom0: zoomRef.current, lastFire: pinchStart.current.lastFire };
-        })
-        .onUpdate((e) => {
-          const now = Date.now();
-          const st = pinchStart.current;
-          const raw = st.zoom0 * e.scale;
-          const mz = maxZoomRef.current;
-          const clamped = Math.min(Math.max(raw, 1), mz);
-          const edge = edgeRef.current;
-          if (edge && now - st.lastFire > 900) {
-            if (e.scale >= 1 && raw >= mz) {
-              st.lastFire = now;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              edge(1);
-              return;
-            }
-            if (e.scale < 0.7 && clamped <= 1) {
-              st.lastFire = now;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              edge(-1);
-              return;
-            }
-          }
-          setZoom(clamped);
-        }),
-    []
-  );
-
-  const composed = useMemo(() => Gesture.Exclusive(pinchGesture, pan), [pinchGesture, pan]);
 
   return (
     <View>
