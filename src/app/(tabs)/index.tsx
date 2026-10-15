@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Card, Chip, GlassCard, Money, Muted, Title } from "@/components/ui";
+import { Btn, Card, Chip, Money, Muted, Title } from "@/components/ui";
 import { SheetHost } from "@/components/SheetHost";
 import SnapshotForm from "@/components/SnapshotForm";
 import { LineChart } from "@/components/charts";
@@ -80,7 +80,7 @@ export default function Overview() {
         </View>
 
         {latestTotals && latest ? (
-          <GlassCard>
+          <View style={{ marginBottom: spacing.l }}>
             <Muted>Latest net worth · as of {format(new Date(latest.observedAt), "d MMM yyyy, HH:mm")}</Muted>
             <Money value={formatMoney(latestTotals.netWorth, reportingCurrency, locale)} />
             {prevTotals && prev ? (
@@ -121,7 +121,7 @@ export default function Overview() {
                 <Text style={{ color: theme.text, fontWeight: "600" }}>{formatMoney(latestTotals.liquid, reportingCurrency, locale)}</Text>
               </View>
             </View>
-          </GlassCard>
+          </View>
         ) : (
           <Card>
             <Title style={{ fontSize: 18 }}>No snapshots yet</Title>
@@ -130,7 +130,7 @@ export default function Overview() {
           </Card>
         )}
 
-        <Card>
+        <View style={{ marginBottom: spacing.l }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <Text style={{ color: theme.text, fontWeight: "700" }}>{showAssets ? "Assets" : "Net worth"} history</Text>
             <Pressable onPress={() => setShowAssets((v) => !v)}>
@@ -152,7 +152,7 @@ export default function Overview() {
             ))}
           </ScrollView>
           <Muted style={{ marginTop: 8 }}>Recorded snapshots only.</Muted>
-        </Card>
+        </View>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Latest-known position (mixed dates)</Text>

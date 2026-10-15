@@ -113,7 +113,7 @@ export default function History() {
         <Title>History</Title>
         <Muted>Actual recorded snapshots — sparse points are shown honestly.</Muted>
 
-        <Card>
+        <View style={{ marginBottom: spacing.l }}>
           <LineChart
             points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
@@ -130,7 +130,7 @@ export default function History() {
               <Text style={{ color: theme.loss, fontWeight: "700" }}>{lowest ? formatMoney(lowest, reportingCurrency, locale) : "—"}</Text>
             </View>
           </View>
-        </Card>
+        </View>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Allocation</Text>
