@@ -80,45 +80,57 @@ export default function Overview() {
         </View>
 
         {latestTotals && latest ? (
-          <View style={{ marginBottom: spacing.l }}>
-            <Muted>Latest net worth · as of {format(new Date(latest.observedAt), "d MMM yyyy, HH:mm")}</Muted>
-            <Money value={formatMoney(latestTotals.netWorth, reportingCurrency, locale)} />
+          <View style={{ marginBottom: spacing.xl, marginTop: spacing.s }}>
+            <Muted style={{ marginBottom: 6 }}>Latest net worth · as of {format(new Date(latest.observedAt), "d MMM yyyy, HH:mm")}</Muted>
+            <Money value={formatMoney(latestTotals.netWorth, reportingCurrency, locale)} style={{ fontSize: 34 }} />
             {prevTotals && prev ? (
-              <Text style={{ color: toDecimal(latestTotals.netWorth).gte(toDecimal(prevTotals.netWorth)) ? theme.gain : theme.loss, fontWeight: "700", marginTop: 4 }}>
-                {formatSigned(toDecimal(latestTotals.netWorth).minus(toDecimal(prevTotals.netWorth)).toString(), reportingCurrency, locale)}
-                {changePct !== null ? ` (${Number(changePct).toFixed(1)}%)` : " (—)"} vs {format(new Date(prev.observedAt), "d MMM")}
-              </Text>
+              <View
+                style={{
+                  alignSelf: "flex-start",
+                  borderWidth: 1,
+                  borderColor: toDecimal(latestTotals.netWorth).gte(toDecimal(prevTotals.netWorth)) ? theme.gain : theme.loss,
+                  borderRadius: 999,
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  marginTop: 10,
+                }}
+              >
+                <Text style={{ color: toDecimal(latestTotals.netWorth).gte(toDecimal(prevTotals.netWorth)) ? theme.gain : theme.loss, fontWeight: "700", fontSize: 13, fontVariant: ["tabular-nums"] }}>
+                  {formatSigned(toDecimal(latestTotals.netWorth).minus(toDecimal(prevTotals.netWorth)).toString(), reportingCurrency, locale)}
+                  {changePct !== null ? ` (${Number(changePct).toFixed(1)}%)` : " (—)"} vs {format(new Date(prev.observedAt), "d MMM")}
+                </Text>
+              </View>
             ) : (
-              <Muted style={{ marginTop: 4 }}>First snapshot — add another to track change.</Muted>
+              <Muted style={{ marginTop: 8 }}>First snapshot — add another to track change.</Muted>
             )}
             {coverageDiffers && (
-              <Muted style={{ marginTop: 4 }}>Note: snapshots cover different accounts — compare with care.</Muted>
+              <Muted style={{ marginTop: 8 }}>Note: snapshots cover different accounts — compare with care.</Muted>
             )}
             {latestTotals.incomplete && (
-              <Muted style={{ marginTop: 4 }}>Converted total incomplete: a required exchange rate is missing.</Muted>
+              <Muted style={{ marginTop: 8 }}>Converted total incomplete: a required exchange rate is missing.</Muted>
             )}
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 18 }}>
               <View style={{ flex: 1 }}>
-                <Muted>Assets</Muted>
-                <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>{formatMoney(latestTotals.assets, reportingCurrency, locale)}</Text>
+                <Muted style={{ marginBottom: 2 }}>Assets</Muted>
+                <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16, fontVariant: ["tabular-nums"] }}>{formatMoney(latestTotals.assets, reportingCurrency, locale)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Muted>Liabilities</Muted>
-                <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>{formatMoney(latestTotals.liabilities, reportingCurrency, locale)}</Text>
+                <Muted style={{ marginBottom: 2 }}>Liabilities</Muted>
+                <Text style={{ color: theme.text, fontWeight: "700", fontSize: 16, fontVariant: ["tabular-nums"] }}>{formatMoney(latestTotals.liabilities, reportingCurrency, locale)}</Text>
               </View>
             </View>
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
               <View style={{ flex: 1 }}>
-                <Muted>Bank & savings</Muted>
-                <Text style={{ color: theme.text, fontWeight: "600" }}>{formatMoney(latestTotals.banking, reportingCurrency, locale)}</Text>
+                <Muted style={{ marginBottom: 2 }}>Bank & savings</Muted>
+                <Text style={{ color: theme.text, fontWeight: "600", fontSize: 15 }}>{formatMoney(latestTotals.banking, reportingCurrency, locale)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Muted>Investments</Muted>
-                <Text style={{ color: theme.text, fontWeight: "600" }}>{formatMoney(latestTotals.investments, reportingCurrency, locale)}</Text>
+                <Muted style={{ marginBottom: 2 }}>Investments</Muted>
+                <Text style={{ color: theme.text, fontWeight: "600", fontSize: 15 }}>{formatMoney(latestTotals.investments, reportingCurrency, locale)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Muted>Liquid</Muted>
-                <Text style={{ color: theme.text, fontWeight: "600" }}>{formatMoney(latestTotals.liquid, reportingCurrency, locale)}</Text>
+                <Muted style={{ marginBottom: 2 }}>Liquid</Muted>
+                <Text style={{ color: theme.text, fontWeight: "600", fontSize: 15 }}>{formatMoney(latestTotals.liquid, reportingCurrency, locale)}</Text>
               </View>
             </View>
           </View>

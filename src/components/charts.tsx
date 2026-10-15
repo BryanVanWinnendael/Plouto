@@ -38,12 +38,11 @@ export function LineChart({
 }) {
   const { theme, isDark } = useTheme();
   const { width } = useWindowDimensions();
-  const W = width - 64;
+  const W = width - 32;
   const H = height;
   const PAD = 8;
-  const GUTTER_R = 62;
-  const plotX0 = 4;
-  const plotX1 = W - GUTTER_R;
+  const plotX0 = 2;
+  const plotX1 = W - 2;
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
@@ -155,8 +154,7 @@ export function LineChart({
           {[0.25, 0.5, 0.75].map((f) => (
             <Line key={f} x1={0} x2={plotX1} y1={H * f} y2={H * f} stroke={theme.border} strokeWidth={1} />
           ))}
-          {/* Y axis line + X baseline */}
-          <Line x1={plotX1} x2={plotX1} y1={0} y2={H} stroke={theme.border} strokeWidth={1} />
+          {/* X baseline */}
           <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
           <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
           <G>
@@ -172,14 +170,14 @@ export function LineChart({
               />
             ))}
           </G>
-          {/* Y axis labels: max / mid / min */}
-          <SvgText x={W - 2} y={12} textAnchor="end" fontSize={10} fill={theme.muted}>
+          {/* Y axis labels: max / mid / min, floating over the plot */}
+          <SvgText x={W - 4} y={12} textAnchor="end" fontSize={10} fill={theme.muted}>
             {fmtAxis(max)}
           </SvgText>
-          <SvgText x={W - 2} y={H / 2 + 3} textAnchor="end" fontSize={10} fill={theme.muted}>
+          <SvgText x={W - 4} y={H / 2 + 3} textAnchor="end" fontSize={10} fill={theme.muted}>
             {fmtAxis(mid)}
           </SvgText>
-          <SvgText x={W - 2} y={H - 4} textAnchor="end" fontSize={10} fill={theme.muted}>
+          <SvgText x={W - 4} y={H - 4} textAnchor="end" fontSize={10} fill={theme.muted}>
             {fmtAxis(min)}
           </SvgText>
         </Svg>
