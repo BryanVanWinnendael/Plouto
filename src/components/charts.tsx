@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, View, Text, useWindowDimensions } from "react-native";
 import Svg, { Polyline, Circle, Line, G, Path, Rect, Text as SvgText } from "react-native-svg";
 import { BlurView } from "expo-blur";
@@ -61,10 +61,36 @@ export function LineChart({
   const lastIdx = useSharedValue(-1);
   const pinchZoomBase = useSharedValue(1);
   const flags = useSharedValue({ interactive: true, hasEdge: false });
-  const onZoomEdgeRef = useRef(onZoomEdge);
+  const onTouchStateChangeRef = useRef(onTouchStateChange);
   const tapMeta = useRef({ x0: 0, seg: 1, count: 0, start: 0, z: 1 });
 
+  // Mirror render state for UI-thread callbacks. Written in an effect —
+  // never during render (Reanimated strict mode forbids render-phase writes).
+  useEffect(() => {
+    geom.value = {
+      x0: plotX0,
+      seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
+      count: visible.length,
+    };
+    zoomMirror.value = z;
+    mzMirror.value = maxZoom;
+    flags.value = { interactive, hasEdge: !!onZoomEdge };
+    onZoomEdgeRef.current = onZoomEdge;
+    onTouchStateChangeRef.current = onTouchStateChange;
+    tapMeta.current = {
+      x0: plotX0,
+      seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
+      count: visible.length,
+      start,
+      z,
+    };
+  });
+
   // Stable JS callbacks invoked from worklets via runOnJS.
+  const onZoomEdgeRef = useRef(onZoomEdge);
+  const setLock = useCallback((v: boolean) => {
+    onTouchStateChangeRef.current?.(v);
+  }, []);
   const tickAndSet = useCallback((i: number) => {
     Haptics.selectionAsync().catch(() => {});
     setHover(i);
@@ -97,6 +123,14 @@ export function LineChart({
       Gesture.Pan()
         .activeOffsetX([-14, 14])
         .failOffsetY([-10, 10])
+        .onTouchesDown(() => {
+          'worklet';
+          runOnJS(setLock)(true);
+        })
+        .onFinalize(() => {
+          'worklet';
+          runOnJS(setLock)(false);
+        })
         .onStart((e) => {
           'worklet';
           if (!flags.value.interactive) return;
@@ -125,6 +159,14 @@ export function LineChart({
   const pinchGesture = useMemo(
     () =>
       Gesture.Pinch()
+        .onTouchesDown(() => {
+          'worklet';
+          runOnJS(setLock)(true);
+        })
+        .onFinalize(() => {
+          'worklet';
+          runOnJS(setLock)(false);
+        })
         .onStart(() => {
           'worklet';
           pinchZoomBase.value = zoomMirror.value;
@@ -161,8 +203,9 @@ export function LineChart({
       Gesture.Tap().onEnd((e) => {
         'worklet';
         runOnJS(doTap)(e.x, e.y);
+        runOnJS(setLock)(false);
       }),
-    [doTap]
+    [doTap, setLock]
   );
 
   const composed = useMemo(
@@ -177,24 +220,6 @@ export function LineChart({
   const endA = anchor == null ? n - 1 : Math.min(Math.max(anchor, 0), n - 1);
   const start = n <= count ? 0 : Math.max(0, Math.min(endA - count + 1, n - count));
   const visible = points.slice(start, start + count);
-
-  // Mirror render state into shared values / refs every render.
-  geom.value = {
-    x0: plotX0,
-    seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
-    count: visible.length,
-  };
-  zoomMirror.value = z;
-  mzMirror.value = maxZoom;
-  flags.value = { interactive, hasEdge: !!onZoomEdge };
-  onZoomEdgeRef.current = onZoomEdge;
-  tapMeta.current = {
-    x0: plotX0,
-    seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
-    count: visible.length,
-    start,
-    z,
-  };
 
   const { coords, min, mid, max } = useMemo(() => {
     const empty = { coords: [] as { x: number; y: number }[], min: "0", mid: "0", max: "1" };
@@ -254,11 +279,6 @@ export function LineChart({
     <View>
       <GestureDetector gesture={composed}>
         <View
-          onTouchStart={() => onTouchStateChange?.(true)}
-          onTouchEnd={(e) => {
-            if (e.nativeEvent.touches.length === 0) onTouchStateChange?.(false);
-          }}
-          onTouchCancel={() => onTouchStateChange?.(false)}
       >
         <Svg width={W} height={H} accessibilityLabel="Net worth history chart. Pinch to zoom.">
           {/* gridlines */}
