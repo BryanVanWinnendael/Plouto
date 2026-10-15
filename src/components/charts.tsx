@@ -41,8 +41,9 @@ export function LineChart({
   const W = width - 32;
   const H = height;
   const PAD = 8;
+  const GUTTER_R = 48;
   const plotX0 = 2;
-  const plotX1 = W - 2;
+  const plotX1 = W - GUTTER_R;
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
@@ -154,8 +155,9 @@ export function LineChart({
           {[0.25, 0.5, 0.75].map((f) => (
             <Line key={f} x1={0} x2={plotX1} y1={H * f} y2={H * f} stroke={theme.border} strokeWidth={1} />
           ))}
-          {/* X baseline */}
+          {/* X baseline + Y gutter separator: the line never enters the label zone */}
           <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
+          <Line x1={plotX1} x2={plotX1} y1={0} y2={H} stroke={theme.border} strokeWidth={1} />
           <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
           <G>
             {dots && coords.map((c, i) => (
