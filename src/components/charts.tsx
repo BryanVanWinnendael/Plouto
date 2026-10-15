@@ -49,6 +49,7 @@ export function LineChart({
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
   const pinch = useRef<{ d0: number; zoom0: number; lastD: number; lastFire: number } | null>(null);
+  const scrub = useRef<{ x0: number; y0: number } | null>(null);
 
   const n = points.length;
   const maxZoom = Math.max(1, n / 3);
@@ -127,12 +128,48 @@ export function LineChart({
     return Math.hypot(t[0].pageX - t[1].pageX, t[0].pageY - t[1].pageY);
   };
 
+  /** Visible-local index nearest a chart-container-relative x. */
+  const indexFromX = (lx: number) => {
+    const m = visible.length;
+    if (m <= 1) return 0;
+    const seg = (plotX1 - DOT_MARGIN - plotX0) / (m - 1);
+    return Math.min(m - 1, Math.max(0, Math.round((lx - plotX0) / seg)));
+  };
+
   return (
     <View>
       <View
-        onMoveShouldSetResponder={(e) => e.nativeEvent.touches.length >= 2 && (maxZoom > 1 || !!onZoomEdge)}
+        onStartShouldSetResponder={(e) => {
+          const t = e.nativeEvent.touches[0];
+          if (t) scrub.current = { x0: t.pageX, y0: t.pageY };
+          return false;
+        }}
+        onMoveShouldSetResponder={(e) => {
+          if (e.nativeEvent.touches.length >= 2) return maxZoom > 1 || !!onZoomEdge;
+          if (!interactive) return false;
+          const s = scrub.current;
+          if (!s) return false;
+          const t = e.nativeEvent.touches[0];
+          const dx = Math.abs(t.pageX - s.x0);
+          const dy = Math.abs(t.pageY - s.y0);
+          // Claim only horizontal-dominant drags so vertical scrolling keeps working.
+          return dx > 14 && dx > dy * 1.4;
+        }}
+        onResponderGrant={(e) => {
+          // Single-touch scrub claimed: show crosshair, no navigation.
+          if (e.nativeEvent.touches.length === 1 && interactive) {
+            Haptics.selectionAsync().catch(() => {});
+            setHover(indexFromX(e.nativeEvent.locationX));
+          }
+        }}
         onResponderMove={(e) => {
-          if (e.nativeEvent.touches.length < 2) return;
+          if (e.nativeEvent.touches.length < 2) {
+            if (interactive) setHover((prev) => {
+              const i = indexFromX(e.nativeEvent.locationX);
+              return prev === i ? prev : i;
+            });
+            return;
+          }
           const d = pinchDistance(e);
           const now = Date.now();
           if (!pinch.current) {
@@ -160,8 +197,8 @@ export function LineChart({
           }
           setZoom(clamped);
         }}
-        onResponderRelease={() => { pinch.current = null; }}
-        onResponderTerminate={() => { pinch.current = null; }}
+        onResponderRelease={() => { pinch.current = null; scrub.current = null; }}
+        onResponderTerminate={() => { pinch.current = null; scrub.current = null; }}
       >
         <Svg width={W} height={H} accessibilityLabel="Net worth history chart. Pinch to zoom.">
           {/* gridlines */}

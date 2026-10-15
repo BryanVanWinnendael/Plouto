@@ -152,7 +152,6 @@ export default function Overview() {
           <LineChart
             points={points}
             key={`range-${range}`}
-            interactive={false}
             dots={false}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
