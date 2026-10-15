@@ -48,6 +48,7 @@ export default function AccountDetail() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
+        delaysContentTouches={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
       >
         <BackButton />

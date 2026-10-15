@@ -95,6 +95,7 @@ export default function History() {
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        delaysContentTouches={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: selected.length === 2 ? insets.bottom + 110 : 16 }}
         refreshControl={

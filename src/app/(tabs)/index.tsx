@@ -73,6 +73,7 @@ export default function Overview() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
+        delaysContentTouches={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await app.refresh(); setRefreshing(false); }} />}
       >
