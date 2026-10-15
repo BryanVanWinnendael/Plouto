@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, View, Text, useWindowDimensions, type GestureResponderEvent } from "react-native";
-import Svg, { Polyline, Circle, Line, G, Path, Text as SvgText } from "react-native-svg";
+import Svg, { Polyline, Circle, Line, G, Path, Rect, Text as SvgText } from "react-native-svg";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/theme/ThemeContext";
@@ -102,6 +102,18 @@ export function LineChart({
   const fmtAxis = (v: string) => (formatAxis ? formatAxis(v) : fmt(v));
   const selPoint = selLocal != null ? visible[selLocal] : null;
 
+  // IBKR-style crosshair: vertical guide + value tag pinned to the selected point.
+  let cross: { cx: number; tx: number; ty: number; tw: number; label: string } | null = null;
+  if (selLocal != null && coords[selLocal]) {
+    const cx = coords[selLocal].x;
+    const cy = coords[selLocal].y;
+    const label = fmt(visible[selLocal].value);
+    const tw = label.length * 6.5 + 18;
+    const tx = Math.min(Math.max(cx, tw / 2 + 2), plotX1 - tw / 2 - 2);
+    const ty = cy - 36 < 6 ? cy + 12 : cy - 36;
+    cross = { cx, tx, tw, ty, label };
+  }
+
   const handlePress = (i: number) => {
     Haptics.selectionAsync().catch(() => {});
     const g = start + i;
@@ -160,6 +172,24 @@ export function LineChart({
           <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
           <Line x1={plotX1} x2={plotX1} y1={0} y2={H} stroke={theme.border} strokeWidth={1} />
           <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+          {cross && (
+            <G>
+              <Line
+                x1={cross.cx} x2={cross.cx} y1={0} y2={H}
+                stroke={theme.primary} strokeWidth={1} strokeDasharray="4 3" opacity={0.55}
+              />
+              <Rect
+                x={cross.tx - cross.tw / 2} y={cross.ty} width={cross.tw} height={24} rx={7}
+                fill={theme.primary}
+              />
+              <SvgText
+                x={cross.tx} y={cross.ty + 16} textAnchor="middle"
+                fontSize={11} fontWeight="700" fill={isDark ? "#000000" : "#FFFFFF"}
+              >
+                {cross.label}
+              </SvgText>
+            </G>
+          )}
           <G>
             {dots && coords.map((c, i) => (
               <Circle
