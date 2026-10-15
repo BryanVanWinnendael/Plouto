@@ -12,7 +12,7 @@ import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
 import { SheetHost } from "@/components/SheetHost";
 import SnapshotForm from "@/components/SnapshotForm";
 import { DonutChart, LineChart } from "@/components/charts";
-import { highestLowest, historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
+import { historySeries, latestKnownPosition, totalsForSnapshot } from "@/finance/calculations";
 import { allocationBy, positionsForAllocation } from "@/finance/allocation";
 import { yearlySummaries } from "@/finance/yearly";
 import { formatMoney, formatMoneyCompact, sumDecimal } from "@/finance/money";
@@ -34,7 +34,6 @@ export default function History() {
     [snapshots]
   );
   const series = useMemo(() => historySeries(ordered, accountsById, fx), [ordered, accountsById, fx]);
-  const { highest, lowest } = useMemo(() => highestLowest(series), [series]);
 
   const lkp = useMemo(() => latestKnownPosition(ordered, accounts, fx), [ordered, accounts, fx]);
   const allocSnap = allocSnapId ? ordered.find((s) => s.id === allocSnapId) : null;
@@ -115,20 +114,11 @@ export default function History() {
 
         <View style={{ marginBottom: spacing.l }}>
           <LineChart
+            height={260}
             points={series.map((p) => ({ label: format(new Date(p.observedAt), "d MMM yy"), value: p.netWorth, key: p.snapshotId }))}
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
           />
-          <View style={{ flexDirection: "row", marginTop: 8 }}>
-            <View style={{ flex: 1 }}>
-              <Muted>Highest recorded</Muted>
-              <Text style={{ color: theme.gain, fontWeight: "700" }}>{highest ? formatMoney(highest, reportingCurrency, locale) : "—"}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Muted>Lowest recorded</Muted>
-              <Text style={{ color: theme.loss, fontWeight: "700" }}>{lowest ? formatMoney(lowest, reportingCurrency, locale) : "—"}</Text>
-            </View>
-          </View>
         </View>
 
         <Card>

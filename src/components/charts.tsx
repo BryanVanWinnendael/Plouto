@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, View, Text, useWindowDimensions, type GestureResponderEvent } from "react-native";
+import { Pressable, StyleSheet, View, Text, useWindowDimensions } from "react-native";
 import Svg, { Polyline, Circle, Line, G, Path, Rect, Text as SvgText } from "react-native-svg";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useTheme } from "@/theme/ThemeContext";
 import { toDecimal } from "@/finance/money";
 
@@ -39,15 +40,13 @@ export function LineChart({
   const W = width - 32;
   const H = height;
   const PAD = 8;
-  const GUTTER_R = 58;
-  const DOT_MARGIN = 10;
+  const GUTTER_R = 64;
+  const DOT_MARGIN = 14;
   const plotX0 = 2;
   const plotX1 = W - GUTTER_R;
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
-  const pinch = useRef<{ d0: number; zoom0: number; lastD: number; lastFire: number } | null>(null);
-  const scrub = useRef<{ x0: number; y0: number } | null>(null);
 
   const n = points.length;
   const maxZoom = Math.max(1, n / 3);
@@ -118,94 +117,84 @@ export function LineChart({
     setAnchor(g);
   };
 
-  const pinchDistance = (e: GestureResponderEvent) => {
-    const t = e.nativeEvent.touches;
-    return Math.hypot(t[0].pageX - t[1].pageX, t[0].pageY - t[1].pageY);
-  };
+  // Mirror render values for gesture callbacks (gestures are created once).
+  const visCountRef = useRef(0);
+  visCountRef.current = visible.length;
+  const zoomRef = useRef(1);
+  zoomRef.current = z;
+  const maxZoomRef = useRef(1);
+  maxZoomRef.current = maxZoom;
+  const edgeRef = useRef(onZoomEdge);
+  edgeRef.current = onZoomEdge;
+  const interactiveRef = useRef(true);
+  interactiveRef.current = interactive;
+  const pinchStart = useRef({ zoom0: 1, lastFire: 0 });
 
-  /** Visible-local index nearest a chart-container-relative x. */
-  const indexFromX = (lx: number) => {
-    const m = visible.length;
+  const indexFromLocalX = (lx: number) => {
+    const m = visCountRef.current;
     if (m <= 1) return 0;
     const seg = (plotX1 - DOT_MARGIN - plotX0) / (m - 1);
     return Math.min(m - 1, Math.max(0, Math.round((lx - plotX0) / seg)));
   };
 
-  return (
-    <View>
-      <View
-        onStartShouldSetResponder={(e) => {
-          const t = e.nativeEvent.touches[0];
-          if (t) scrub.current = { x0: t.pageX, y0: t.pageY };
-          return false;
-        }}
-        onMoveShouldSetResponderCapture={(e) => {
-          // Capture phase runs before children (tap targets), so a horizontal
-          // drag reliably becomes a scrub instead of a tap.
-          if (e.nativeEvent.touches.length >= 2) return false;
-          if (!interactive) return false;
-          const s = scrub.current;
-          if (!s) return false;
-          const t = e.nativeEvent.touches[0];
-          const dx = Math.abs(t.pageX - s.x0);
-          const dy = Math.abs(t.pageY - s.y0);
-          return dx > 14 && dx > dy * 1.4;
-        }}
-        onMoveShouldSetResponder={(e) => {
-          if (e.nativeEvent.touches.length >= 2) return maxZoom > 1 || !!onZoomEdge;
-          if (!interactive) return false;
-          const s = scrub.current;
-          if (!s) return false;
-          const t = e.nativeEvent.touches[0];
-          const dx = Math.abs(t.pageX - s.x0);
-          const dy = Math.abs(t.pageY - s.y0);
-          // Claim only horizontal-dominant drags so vertical scrolling keeps working.
-          return dx > 14 && dx > dy * 1.4;
-        }}
-        onResponderGrant={(e) => {
-          // Single-touch scrub claimed: show crosshair, no navigation.
-          if (e.nativeEvent.touches.length === 1 && interactive) {
-            Haptics.selectionAsync().catch(() => {});
-            setHover(indexFromX(e.nativeEvent.locationX));
-          }
-        }}
-        onResponderMove={(e) => {
-          if (e.nativeEvent.touches.length < 2) {
-            if (interactive) setHover((prev) => {
-              const i = indexFromX(e.nativeEvent.locationX);
-              return prev === i ? prev : i;
-            });
-            return;
-          }
-          const d = pinchDistance(e);
+  // Press-hold-drag scrub: horizontal-dominant pans move the crosshair,
+  // vertical pans fail so the parent ScrollView keeps scrolling.
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-14, 14])
+        .failOffsetY([-10, 10])
+        .onStart((e) => {
+          if (!interactiveRef.current) return;
+          Haptics.selectionAsync().catch(() => {});
+          setHover(indexFromLocalX(e.x));
+        })
+        .onUpdate((e) => {
+          if (!interactiveRef.current) return;
+          const i = indexFromLocalX(e.x);
+          setHover((prev) => (prev === i ? prev : i));
+        }),
+    []
+  );
+
+  const pinchGesture = useMemo(
+    () =>
+      Gesture.Pinch()
+        .onStart(() => {
+          pinchStart.current = { zoom0: zoomRef.current, lastFire: pinchStart.current.lastFire };
+        })
+        .onUpdate((e) => {
           const now = Date.now();
-          if (!pinch.current) {
-            pinch.current = { d0: d, zoom0: z, lastD: d, lastFire: 0 };
-            return;
-          }
-          const p = pinch.current;
-          const dir = d > p.lastD + 1 ? 1 : d < p.lastD - 1 ? -1 : 0;
-          p.lastD = d;
-          const raw = p.zoom0 * (d / p.d0);
-          const clamped = Math.min(Math.max(raw, 1), maxZoom);
-          if (onZoomEdge && dir !== 0 && now - p.lastFire > 900) {
-            if (dir === 1 && raw >= maxZoom) {
-              pinch.current = { d0: d, zoom0: maxZoom, lastD: d, lastFire: now };
+          const st = pinchStart.current;
+          const raw = st.zoom0 * e.scale;
+          const mz = maxZoomRef.current;
+          const clamped = Math.min(Math.max(raw, 1), mz);
+          const edge = edgeRef.current;
+          if (edge && now - st.lastFire > 900) {
+            if (e.scale >= 1 && raw >= mz) {
+              st.lastFire = now;
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              onZoomEdge(1);
+              edge(1);
               return;
             }
-            if (dir === -1 && clamped <= 1 && d < p.d0 * 0.7) {
-              pinch.current = { d0: d, zoom0: 1, lastD: d, lastFire: now };
+            if (e.scale < 0.7 && clamped <= 1) {
+              st.lastFire = now;
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              onZoomEdge(-1);
+              edge(-1);
               return;
             }
           }
           setZoom(clamped);
-        }}
-        onResponderRelease={() => { pinch.current = null; scrub.current = null; }}
-        onResponderTerminate={() => { pinch.current = null; scrub.current = null; }}
+        }),
+    []
+  );
+
+  const composed = useMemo(() => Gesture.Exclusive(pinchGesture, pan), [pinchGesture, pan]);
+
+  return (
+    <View>
+      <GestureDetector gesture={composed}>
+        <View
       >
         <Svg width={W} height={H} accessibilityLabel="Net worth history chart. Pinch to zoom.">
           {/* gridlines */}
@@ -301,6 +290,7 @@ export function LineChart({
           </View>
         )}
       </View>
+      </GestureDetector>
       {/* X axis: first / last visible observation dates */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
         <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[0].label}</Text>

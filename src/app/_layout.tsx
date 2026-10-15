@@ -1,5 +1,6 @@
 import { Stack, ThemeProvider as NavThemeProvider, DarkTheme, DefaultTheme } from "expo-router";
-import { SQLiteProvider } from "expo-sqlite";import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SQLiteProvider } from "expo-sqlite";
+import { GestureHandlerRootView } from "react-native-gesture-handler";import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { DATABASE_NAME } from "@/db/schema";
 import { migrate, seedDefaultCategories } from "@/db/schema";
@@ -17,7 +18,9 @@ export default function RootLayout() {
         }}
       >
         <ThemeProvider>
-          <AppGate />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <AppGate />
+          </GestureHandlerRootView>
         </ThemeProvider>
       </SQLiteProvider>
     </SafeAreaProvider>
