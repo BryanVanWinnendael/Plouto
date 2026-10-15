@@ -172,10 +172,8 @@ export function LineChart({
             return;
           }
           if (!interactive) return;
-          setHover((prev) => {
-            const i = indexFromLocalX(e.nativeEvent.locationX);
-            return prev === i ? prev : i;
-          });
+          const i = indexFromLocalX(e.nativeEvent.locationX);
+          setHover((prev) => (prev === i ? prev : i));
         }}
         onResponderRelease={(e) => {
           const s = touchStart.current;
