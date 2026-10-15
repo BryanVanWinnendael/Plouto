@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, View, Text, useWindowDimensions } from "react-na
 import Svg, { Polyline, Circle, Line, G, Path, Rect, Text as SvgText } from "react-native-svg";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useTheme } from "@/theme/ThemeContext";
 import { toDecimal } from "@/finance/money";
 
@@ -48,74 +47,16 @@ export function LineChart({
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
 
-  // All hooks below run on every render (before any early return).
-  const visCountRef = useRef(0);
-  const zoomRef = useRef(1);
-  const maxZoomRef = useRef(1);
-  const edgeRef = useRef(onZoomEdge);
-  const interactiveRef = useRef(true);
-  const pinchStart = useRef({ zoom0: 1, lastFire: 0 });
+  // Touch state persists across moves within one gesture (plain refs, not hooks-in-callbacks).
+  const pinchBase = useRef<{ d0: number; zoom0: number; lastFire: number } | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const indexFromLocalX = (lx: number) => {
-    const m = visCountRef.current;
+    const m = visible.length;
     if (m <= 1) return 0;
     const seg = (plotX1 - DOT_MARGIN - plotX0) / (m - 1);
     return Math.min(m - 1, Math.max(0, Math.round((lx - plotX0) / seg)));
   };
-
-  // Press-hold-drag scrub: horizontal-dominant pans move the crosshair,
-  // vertical pans fail so the parent ScrollView keeps scrolling.
-  const pan = useMemo(
-    () =>
-      Gesture.Pan()
-        .activeOffsetX([-14, 14])
-        .failOffsetY([-10, 10])
-        .onStart((e) => {
-          if (!interactiveRef.current) return;
-          Haptics.selectionAsync().catch(() => {});
-          setHover(indexFromLocalX(e.x));
-        })
-        .onUpdate((e) => {
-          if (!interactiveRef.current) return;
-          const i = indexFromLocalX(e.x);
-          setHover((prev) => (prev === i ? prev : i));
-        }),
-    []
-  );
-
-  const pinchGesture = useMemo(
-    () =>
-      Gesture.Pinch()
-        .onStart(() => {
-          pinchStart.current = { zoom0: zoomRef.current, lastFire: pinchStart.current.lastFire };
-        })
-        .onUpdate((e) => {
-          const now = Date.now();
-          const st = pinchStart.current;
-          const raw = st.zoom0 * e.scale;
-          const mz = maxZoomRef.current;
-          const clamped = Math.min(Math.max(raw, 1), mz);
-          const edge = edgeRef.current;
-          if (edge && now - st.lastFire > 900) {
-            if (e.scale >= 1 && raw >= mz) {
-              st.lastFire = now;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              edge(1);
-              return;
-            }
-            if (e.scale < 0.7 && clamped <= 1) {
-              st.lastFire = now;
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-              edge(-1);
-              return;
-            }
-          }
-          setZoom(clamped);
-        }),
-    []
-  );
-
-  const composed = useMemo(() => Gesture.Exclusive(pinchGesture, pan), [pinchGesture, pan]);
 
   const n = points.length;
   const maxZoom = Math.max(1, n / 3);
@@ -186,17 +127,79 @@ export function LineChart({
     setAnchor(g);
   };
 
-  // Mirror render values for gesture callbacks (refs update every render).
-  visCountRef.current = visible.length;
-  zoomRef.current = z;
-  maxZoomRef.current = maxZoom;
-  edgeRef.current = onZoomEdge;
-  interactiveRef.current = interactive;
-
   return (
     <View>
-      <GestureDetector gesture={composed}>
-        <View
+      <View
+        onStartShouldSetResponder={() => interactive}
+        onResponderTerminationRequest={() => true}
+        onResponderGrant={(e) => {
+          const t = e.nativeEvent.touches[0];
+          if (t) {
+            touchStart.current = { x: e.nativeEvent.locationX, y: e.nativeEvent.locationY };
+          }
+          pinchBase.current = null;
+        }}
+        onResponderMove={(e) => {
+          const touches = e.nativeEvent.touches;
+          if (touches.length >= 2) {
+            const d = Math.hypot(
+              touches[0].pageX - touches[1].pageX,
+              touches[0].pageY - touches[1].pageY
+            );
+            const now = Date.now();
+            if (!pinchBase.current) {
+              pinchBase.current = { d0: d, zoom0: z, lastFire: 0 };
+              return;
+            }
+            const b = pinchBase.current;
+            const raw = b.zoom0 * (d / b.d0);
+            const clamped = Math.min(Math.max(raw, 1), maxZoom);
+            if (onZoomEdge && now - b.lastFire > 900) {
+              if (d >= b.d0 && raw >= maxZoom) {
+                b.lastFire = now;
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                onZoomEdge(1);
+                return;
+              }
+              if (d < b.d0 * 0.7 && clamped <= 1) {
+                b.lastFire = now;
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                onZoomEdge(-1);
+                return;
+              }
+            }
+            setZoom(clamped);
+            return;
+          }
+          if (!interactive) return;
+          setHover((prev) => {
+            const i = indexFromLocalX(e.nativeEvent.locationX);
+            return prev === i ? prev : i;
+          });
+        }}
+        onResponderRelease={(e) => {
+          const s = touchStart.current;
+          pinchBase.current = null;
+          touchStart.current = null;
+          if (!interactive || !s) return;
+          const lx = e.nativeEvent.locationX;
+          const ly = e.nativeEvent.locationY;
+          // Tap (not a drag): crosshair here; reset zone clears zoom.
+          if (Math.hypot(lx - s.x, ly - s.y) > 14) return;
+          if (z > 1.01 && lx < 110 && ly < 52) {
+            Haptics.selectionAsync().catch(() => {});
+            setZoom(1);
+            setAnchor(null);
+            setHover(null);
+            return;
+          }
+          handlePress(indexFromLocalX(lx));
+        }}
+        onResponderTerminate={() => {
+          pinchBase.current = null;
+          touchStart.current = null;
+          setHover(null);
+        }}
       >
         <Svg width={W} height={H} accessibilityLabel="Net worth history chart. Pinch to zoom.">
           {/* gridlines */}
@@ -255,44 +258,22 @@ export function LineChart({
             {fmtAxis(min)}
           </SvgText>
         </Svg>
-        {/* touch targets for taps (drags are captured by the container above) */}
-        {interactive && (
-          <View style={{ flexDirection: "row", marginTop: -H, height: H }}>
-            {coords.map((_, i) => (
-              <Pressable
-                key={i}
-                accessibilityLabel={`Point ${visible[i].label}: ${fmt(visible[i].value)}`}
-                style={{ flex: 1 }}
-                onPress={() => handlePress(i)}
-              />
-            ))}
-          </View>
-        )}
         {z > 1.01 && (
-          <View style={{ position: "absolute", top: 6, left: 6 }}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Reset chart zoom"
-              hitSlop={10}
-              onPress={() => {
-                Haptics.selectionAsync().catch(() => {});
-                setZoom(1); setAnchor(null); setHover(null);
-              }}
-              style={{ borderRadius: 999, overflow: "hidden", borderWidth: 1, borderColor: theme.border }}
-            >
-              <BlurView
-                intensity={60}
-                tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={{ paddingVertical: 7, paddingHorizontal: 12 }}>
-                <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "700" }}>Reset zoom</Text>
-              </View>
-            </Pressable>
+          <View
+            accessibilityLabel="Reset chart zoom. Double tap the top left of the chart to reset."
+            style={{ position: "absolute", top: 6, left: 6, borderRadius: 999, overflow: "hidden", borderWidth: 1, borderColor: theme.border }}
+          >
+            <BlurView
+              intensity={60}
+              tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={{ paddingVertical: 7, paddingHorizontal: 12 }}>
+              <Text style={{ color: theme.primary, fontSize: 12, fontWeight: "700" }}>Reset zoom</Text>
+            </View>
           </View>
         )}
       </View>
-      </GestureDetector>
       {/* X axis: first / last visible observation dates */}
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 4 }}>
         <Text style={{ color: theme.muted, fontSize: 10 }}>{visible[0].label}</Text>
