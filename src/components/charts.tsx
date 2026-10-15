@@ -41,7 +41,8 @@ export function LineChart({
   const W = width - 32;
   const H = height;
   const PAD = 8;
-  const GUTTER_R = 48;
+  const GUTTER_R = 58;
+  const DOT_MARGIN = 10;
   const plotX0 = 2;
   const plotX1 = W - GUTTER_R;
   const [hover, setHover] = useState<number | null>(null);
@@ -66,7 +67,7 @@ export function LineChart({
     if (mn === mx) { mn -= 1; mx += 1; }
     const m = visible.length;
     const coords = vals.map((v, i) => ({
-      x: m === 1 ? (plotX0 + plotX1) / 2 : plotX0 + (i * (plotX1 - plotX0)) / (m - 1),
+      x: m === 1 ? (plotX0 + plotX1 - DOT_MARGIN) / 2 : plotX0 + (i * (plotX1 - DOT_MARGIN - plotX0)) / (m - 1),
       y: PAD + (1 - (v - mn) / (mx - mn)) * (H - PAD * 2),
     }));
     const minPt = visible.reduce((a, b) => (toDecimal(a.value).lt(toDecimal(b.value)) ? a : b)).value;
