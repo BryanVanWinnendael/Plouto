@@ -27,6 +27,7 @@ export default function Overview() {
   const [range, setRange] = useState<number | null>(null);
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [chartTouch, setChartTouch] = useState(false);
   const [snapOpen, setSnapOpen] = useState(false);
 
   /** Pinch past the chart limits steps the time range (zoom in = shorter range). */
@@ -71,9 +72,9 @@ export default function Overview() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
+        scrollEnabled={!chartTouch}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
-        delaysContentTouches={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await app.refresh(); setRefreshing(false); }} />}
       >
@@ -159,6 +160,7 @@ export default function Overview() {
             formatY={(v) => formatMoney(v, reportingCurrency, locale)}
             formatAxis={(v) => formatMoneyCompact(v, reportingCurrency, locale)}
             onZoomEdge={stepRange}
+            onTouchStateChange={setChartTouch}
           />
           <View style={{ flexDirection: "row", gap: 6, marginTop: 10 }}>
             {RANGES.map((r) => {

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -15,6 +15,7 @@ export default function AccountDetail() {
   const { theme } = useTheme();
   const app = useApp();
   const account = useMemo(() => app.accounts.find((a) => a.id === id), [app.accounts, id]);
+  const [chartTouch, setChartTouch] = useState(false);
 
   const points = useMemo(() => {
     if (!account) return [];
@@ -46,9 +47,9 @@ export default function AccountDetail() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
+        scrollEnabled={!chartTouch}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
-        delaysContentTouches={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
       >
         <BackButton />
@@ -75,6 +76,7 @@ export default function AccountDetail() {
             points={points}
             formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)}
             formatAxis={(v) => formatMoneyCompact(v, app.reportingCurrency, app.locale)}
+            onTouchStateChange={setChartTouch}
           />
         </Card>
 

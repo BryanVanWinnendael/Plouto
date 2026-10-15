@@ -18,7 +18,7 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, step = false, formatY, formatAxis, onZoomEdge, interactive = true, dots = true,
+  points, height = 190, step = false, formatY, formatAxis, onZoomEdge, onTouchStateChange, interactive = true, dots = true,
 }: {
   points: ChartPoint[];
   height?: number;
@@ -29,6 +29,8 @@ export function LineChart({
   formatAxis?: (value: string) => string;
   /** Fired when pinching past the zoom limits (1 = zoom further in, -1 = zoom out). */
   onZoomEdge?: (dir: 1 | -1) => void;
+  /** Called with true on touch start, false when the touch ends. */
+  onTouchStateChange?: (active: boolean) => void;
   /** When false, points are not tappable (zoom still works). Defaults to true. */
   interactive?: boolean;
   /** Show data point dots. Defaults to true. */
@@ -132,6 +134,7 @@ export function LineChart({
   return (
     <View>
       <View
+        onTouchStart={() => onTouchStateChange?.(true)}
         onStartShouldSetResponder={() => interactive}
         // Never yield: touches starting on the chart belong to the chart,
         // even vertical ones. Scroll the page from anywhere else.
@@ -204,6 +207,7 @@ export function LineChart({
           touchStart.current = null;
           gestureLocked.current = false;
           tickIndex.current = -1;
+          onTouchStateChange?.(false);
           if (!interactive || !s) return;
           const lx = e.nativeEvent.locationX;
           const ly = e.nativeEvent.locationY;
@@ -223,6 +227,7 @@ export function LineChart({
           touchStart.current = null;
           gestureLocked.current = false;
           tickIndex.current = -1;
+          onTouchStateChange?.(false);
           setHover(null);
         }}
       >
