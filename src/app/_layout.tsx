@@ -1,5 +1,6 @@
 import { Stack, ThemeProvider as NavThemeProvider, DarkTheme, DefaultTheme } from "expo-router";
 import { SQLiteProvider } from "expo-sqlite";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { DATABASE_NAME } from "@/db/schema";

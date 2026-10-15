@@ -15,6 +15,7 @@ export default function AccountDetail() {
   const { theme } = useTheme();
   const app = useApp();
   const account = useMemo(() => app.accounts.find((a) => a.id === id), [app.accounts, id]);
+  const [chartTouch, setChartTouch] = useState(false);
 
   const points = useMemo(() => {
     if (!account) return [];
@@ -46,6 +47,7 @@ export default function AccountDetail() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
+        scrollEnabled={!chartTouch}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
@@ -74,6 +76,7 @@ export default function AccountDetail() {
             points={points}
             formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)}
             formatAxis={(v) => formatMoneyCompact(v, app.reportingCurrency, app.locale)}
+            onTouchStateChange={setChartTouch}
           />
         </Card>
 

@@ -20,7 +20,7 @@ export interface ChartPoint {
  * `onSelect` / `selectedIndex` use GLOBAL point indexes so callers stay correct while zoomed.
  */
 export function LineChart({
-  points, height = 190, step = false, formatY, formatAxis, onZoomEdge, interactive = true, dots = true,
+  points, height = 190, step = false, formatY, formatAxis, onZoomEdge, onTouchStateChange, interactive = true, dots = true,
 }: {
   points: ChartPoint[];
   height?: number;
@@ -31,6 +31,8 @@ export function LineChart({
   formatAxis?: (value: string) => string;
   /** Fired when pinching past the zoom limits (1 = zoom further in, -1 = zoom out). */
   onZoomEdge?: (dir: 1 | -1) => void;
+  /** Touch-active flag so parents can lock page scroll during chart gestures. */
+  onTouchStateChange?: (active: boolean) => void;
   /** When false, points are not tappable (zoom still works). Defaults to true. */
   interactive?: boolean;
   /** Show data point dots. Defaults to true. */
@@ -252,6 +254,11 @@ export function LineChart({
     <View>
       <GestureDetector gesture={composed}>
         <View
+          onTouchStart={() => onTouchStateChange?.(true)}
+          onTouchEnd={(e) => {
+            if (e.nativeEvent.touches.length === 0) onTouchStateChange?.(false);
+          }}
+          onTouchCancel={() => onTouchStateChange?.(false)}
       >
         <Svg width={W} height={H} accessibilityLabel="Net worth history chart. Pinch to zoom.">
           {/* gridlines */}
