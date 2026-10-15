@@ -133,7 +133,9 @@ export function LineChart({
     <View>
       <View
         onStartShouldSetResponder={() => interactive}
-        onResponderTerminationRequest={() => !gestureLocked.current}
+        // Never yield: touches starting on the chart belong to the chart,
+        // even vertical ones. Scroll the page from anywhere else.
+        onResponderTerminationRequest={() => false}
         onResponderGrant={(e) => {
           const t = e.nativeEvent.touches[0];
           if (t) {
@@ -181,14 +183,16 @@ export function LineChart({
           const lx = e.nativeEvent.locationX;
           const i = indexFromLocalX(lx);
           const s = touchStart.current;
+          // Only track horizontal-dominant movement; vertical drags hold position.
           if (s && t) {
             const dx = Math.abs(t.pageX - s.x);
             const dy = Math.abs(t.pageY - s.y);
-            if (!gestureLocked.current && dx > 10 && dx > dy * 1.2) {
+            if (dx > 6 && dx > dy && !gestureLocked.current) {
               gestureLocked.current = true;
             }
           }
-          if (gestureLocked.current && tickIndex.current !== i) {
+          if (!gestureLocked.current) return;
+          if (tickIndex.current !== i) {
             tickIndex.current = i;
             Haptics.selectionAsync().catch(() => {});
           }

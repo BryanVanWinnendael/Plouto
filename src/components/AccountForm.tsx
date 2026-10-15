@@ -1,17 +1,16 @@
 import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { useApp } from "@/store/AppContext";
-import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, BackButton, Muted, Title, useSheet } from "@/components/ui";
+import { Btn, useSheet } from "@/components/ui";
 import { saveAccount } from "@/db/repo";
 import { DEFAULT_ACCOUNT_CATEGORIES } from "@/finance/types";
 
 /** Account create/edit form, designed to live inside a native bottom sheet. */
 export default function AccountForm({ accountId, onClose }: { accountId?: string; onClose: () => void }) {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const sheet = useSheet();
   const db = useSQLiteContext();
   const app = useApp();
@@ -48,24 +47,9 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
 
   return (
     <View style={{ flex: 1, backgroundColor: "transparent" }}>
-      <View style={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: spacing.s }}>
-        <BlurView
-          intensity={70}
-          tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <BackButton label="Cancel" chevron={false} onPress={onClose} />
-          <View style={{ flex: 1, alignItems: "center" }}>
-            <Title style={{ fontSize: 18 }}>{existing ? "Edit account" : "New account"}</Title>
-          </View>
-          <View style={{ width: 60 }} />
-        </View>
-        <Muted>You can create multiple accounts of the same type.</Muted>
-      </View>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.s, paddingBottom: 130 }}
+        contentContainerStyle={{ paddingHorizontal: spacing.l, paddingTop: spacing.l, paddingBottom: 130 }}
         keyboardShouldPersistTaps="handled"
       >
 
