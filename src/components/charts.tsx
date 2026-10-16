@@ -47,6 +47,9 @@ export function LineChart({
   const DOT_MARGIN = 14;
   const plotX0 = 2;
   const plotX1 = W - GUTTER_R;
+  // Data range keeps the largest dot (r=6 + stroke) fully inside the viewport.
+  const dataX0 = plotX0 + 8;
+  const dataX1 = plotX1 - DOT_MARGIN;
   const [hover, setHover] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [anchor, setAnchor] = useState<number | null>(null);
@@ -68,8 +71,8 @@ export function LineChart({
   // never during render (Reanimated strict mode forbids render-phase writes).
   useEffect(() => {
     geom.value = {
-      x0: plotX0,
-      seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
+      x0: dataX0,
+      seg: visible.length > 1 ? (dataX1 - dataX0) / (visible.length - 1) : 1,
       count: visible.length,
     };
     zoomMirror.value = z;
@@ -78,8 +81,8 @@ export function LineChart({
     onZoomEdgeRef.current = onZoomEdge;
     onTouchStateChangeRef.current = onTouchStateChange;
     tapMeta.current = {
-      x0: plotX0,
-      seg: visible.length > 1 ? (plotX1 - DOT_MARGIN - plotX0) / (visible.length - 1) : 1,
+      x0: dataX0,
+      seg: visible.length > 1 ? (dataX1 - dataX0) / (visible.length - 1) : 1,
       count: visible.length,
       start,
       z,
@@ -230,7 +233,7 @@ export function LineChart({
     if (mn === mx) { mn -= 1; mx += 1; }
     const m = visible.length;
     const coords = vals.map((v, i) => ({
-      x: m === 1 ? (plotX0 + plotX1 - DOT_MARGIN) / 2 : plotX0 + (i * (plotX1 - DOT_MARGIN - plotX0)) / (m - 1),
+      x: m === 1 ? (dataX0 + dataX1) / 2 : dataX0 + (i * (dataX1 - dataX0)) / (m - 1),
       y: PAD + (1 - (v - mn) / (mx - mn)) * (H - PAD * 2),
     }));
     const minPt = visible.reduce((a, b) => (toDecimal(a.value).lt(toDecimal(b.value)) ? a : b)).value;
@@ -289,6 +292,19 @@ export function LineChart({
           <Line x1={0} x2={plotX1} y1={H - 1} y2={H - 1} stroke={theme.border} strokeWidth={1} />
           <Line x1={plotX1} x2={plotX1} y1={0} y2={H} stroke={theme.border} strokeWidth={1} />
           <Polyline points={path} fill="none" stroke={theme.primary} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+          <G>
+            {dots && coords.map((c, i) => (
+              <Circle
+                key={i}
+                cx={c.x}
+                cy={c.y}
+                r={selLocal === i ? 6 : 3.5}
+                fill={selLocal === i ? theme.primary : theme.surface}
+                stroke={theme.primary}
+                strokeWidth={2}
+              />
+            ))}
+          </G>
           {cross && (
             <G>
               <Line
@@ -313,19 +329,6 @@ export function LineChart({
               </SvgText>
             </G>
           )}
-          <G>
-            {dots && coords.map((c, i) => (
-              <Circle
-                key={i}
-                cx={c.x}
-                cy={c.y}
-                r={selLocal === i ? 6 : 3.5}
-                fill={selLocal === i ? theme.primary : theme.surface}
-                stroke={theme.primary}
-                strokeWidth={2}
-              />
-            ))}
-          </G>
           {/* Y axis labels: max / mid / min, floating over the plot */}
           <SvgText x={W - 4} y={12} textAnchor="end" fontSize={10} fill={theme.muted}>
             {fmtAxis(max)}
