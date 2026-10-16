@@ -6,12 +6,14 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
+import { Btn, Card, Muted, Title } from "@/components/ui";
+import { Host, Picker, Text as UIText } from "@expo/ui/swift-ui";
+import { environment, pickerStyle, tag } from "@expo/ui/swift-ui/modifiers";
 import { setSetting } from "@/db/repo";
 import { seedDemo } from "@/lib/demo";
 
 export default function Onboarding() {
-  const { theme, setMode, mode } = useTheme();
+  const { theme, setMode, mode, isDark } = useTheme();
   const db = useSQLiteContext();
   const app = useApp();
   const [currency, setCurrency] = useState(app.reportingCurrency || "USD");
@@ -47,10 +49,31 @@ export default function Onboarding() {
               style={{ backgroundColor: theme.surface2, color: theme.text, borderRadius: 10, padding: 12, marginTop: 8, textAlign: "center", fontSize: 18, fontWeight: "700" }}
             />
             <Text style={{ color: theme.text, fontWeight: "700", marginTop: 12 }}>Theme</Text>
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-              {(["light", "dark", "system"] as const).map((m) => (
-                <Chip key={m} label={m} active={mode === m} onPress={() => setMode(m)} />
-              ))}
+            <View
+              style={{
+                backgroundColor: theme.surface2,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: theme.border,
+                paddingHorizontal: 12,
+                marginTop: 8,
+              }}
+            >
+              <Host style={{ width: "100%", height: 48 }}>
+                <Picker
+                  label="Appearance"
+                  selection={mode}
+                  onSelectionChange={(v) => setMode(v as "light" | "dark" | "system")}
+                  modifiers={[
+                    pickerStyle("menu"),
+                    environment("colorScheme", isDark ? "dark" : "light"),
+                  ]}
+                >
+                  <UIText modifiers={[tag("light")]}>Light</UIText>
+                  <UIText modifiers={[tag("dark")]}>Dark</UIText>
+                  <UIText modifiers={[tag("system")]}>System</UIText>
+                </Picker>
+              </Host>
             </View>
             <View style={{ marginTop: 16 }}>
               <Btn label="Continue" onPress={() => setStep(1)} />
