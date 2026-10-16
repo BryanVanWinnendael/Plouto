@@ -7,6 +7,8 @@ import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { BackButton, Card, Chip, Muted, Title } from "@/components/ui";
+import { Host, Menu, Toggle, HStack, Spacer, Text as UIText, Image } from "@expo/ui/swift-ui";
+import { foregroundStyle } from "@expo/ui/swift-ui/modifiers";
 import { compareSnapshots } from "@/finance/compare";
 import { formatMoney } from "@/finance/money";
 import { toDecimal } from "@/finance/money";
@@ -16,6 +18,7 @@ export default function Compare() {
   const { theme } = useTheme();
   const app = useApp();
   const [sort, setSort] = useState<"increase" | "decrease" | "name">("increase");
+  const SORT_LABELS = { increase: "Largest increase", decrease: "Largest decrease", name: "Name (A–Z)" } as const;
   const [commonOnly, setCommonOnly] = useState(true);
 
   const sa = useMemo(() => app.snapshots.find((s) => s.id === a), [app.snapshots, a]);
@@ -76,10 +79,22 @@ export default function Compare() {
             {result.onlyInA.length} only in A · {result.onlyInB.length} only in B — missing is not zero. Common-only mode compares like-for-like.
           </Muted>
         )}
-        <View style={{ flexDirection: "row", marginBottom: 8 }}>
-          {(["increase", "decrease", "name"] as const).map((s) => (
-            <Chip key={s} label={s} active={sort === s} onPress={() => setSort(s)} />
-          ))}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginBottom: 8 }}>
+          <Host style={{ width: 210, height: 44 }}>
+            <Menu
+              label={
+                <HStack>
+                  <Spacer />
+                  <UIText modifiers={[foregroundStyle(theme.primary)]}>{SORT_LABELS[sort]}</UIText>
+                  <Image systemName="chevron.up.chevron.down" modifiers={[foregroundStyle(theme.primary)]} />
+                </HStack>
+              }
+            >
+              {(Object.keys(SORT_LABELS) as (keyof typeof SORT_LABELS)[]).map((s) => (
+                <Toggle key={s} isOn={sort === s} label={SORT_LABELS[s]} onIsOnChange={() => setSort(s)} />
+              ))}
+            </Menu>
+          </Host>
         </View>
 
         {rows.map((r) => (
