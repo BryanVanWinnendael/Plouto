@@ -131,6 +131,7 @@ export function LineChart({
         })
         .onStart((e) => {
           'worklet';
+          if (e.numberOfPointers !== 1) return;
           if (!flags.value.interactive) return;
           const g = geom.value;
           if (g.count <= 1) return;
@@ -142,6 +143,7 @@ export function LineChart({
         })
         .onUpdate((e) => {
           'worklet';
+          if (e.numberOfPointers !== 1) return;
           if (!flags.value.interactive) return;
           const g = geom.value;
           if (g.count <= 1) return;
@@ -206,11 +208,9 @@ export function LineChart({
     [doTap, setLock]
   );
 
-  // NOTE: pinch temporarily unwired to test whether it interferes with pan.
-  void pinchGesture;
   const composed = useMemo(
-    () => Gesture.Exclusive(pan, tapGesture),
-    [pan, tapGesture]
+    () => Gesture.Simultaneous(pinchGesture, pan, tapGesture),
+    [pinchGesture, pan, tapGesture]
   );
 
   const n = points.length;
