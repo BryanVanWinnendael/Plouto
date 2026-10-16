@@ -57,6 +57,7 @@ function LockGate({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const [unlocked, setUnlocked] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+  const [methodLabel, setMethodLabel] = useState("Unlock");
 
   const authenticate = useCallback(async () => {
     try {
@@ -81,6 +82,23 @@ function LockGate({ children }: { children: React.ReactNode }) {
   }, [appLock]);
 
   useEffect(() => {
+    if (!appLock) return;
+    LocalAuthentication.supportedAuthenticationTypesAsync()
+      .then((types) => {
+        if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+          setMethodLabel("Unlock with Face ID");
+        } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+          setMethodLabel("Unlock with fingerprint");
+        } else if (types.includes(LocalAuthentication.AuthenticationType.IRIS)) {
+          setMethodLabel("Unlock with iris");
+        } else {
+          setMethodLabel("Unlock");
+        }
+      })
+      .catch(() => {});
+  }, [appLock]);
+
+  useEffect(() => {
     if (ready && appLock && !unlocked) authenticate();
   }, [ready, appLock, unlocked, authenticate]);
 
@@ -101,7 +119,7 @@ function LockGate({ children }: { children: React.ReactNode }) {
         </Muted>
         {failed && <Muted style={{ marginTop: 8, color: theme.danger }}>{failed}</Muted>}
         <View style={{ width: "100%", marginTop: 20 }}>
-          <Btn label="Unlock" onPress={authenticate} />
+          <Btn label={methodLabel} onPress={authenticate} />
         </View>
       </View>
     );
