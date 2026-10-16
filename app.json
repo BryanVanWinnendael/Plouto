@@ -8,7 +8,7 @@
     "scheme": "plouto",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "app.plouto.wealth",
       "buildNumber": "4",
       "infoPlist": {
