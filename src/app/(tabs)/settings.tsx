@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Alert, ScrollView, Share, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { Host, Toggle } from "@expo/ui/swift-ui";
-import { environment, tint } from "@expo/ui/swift-ui/modifiers";
+import { Host, Toggle, Picker, Text as UIText } from "@expo/ui/swift-ui";
+import { environment, tint, pickerStyle, tag } from "@expo/ui/swift-ui/modifiers";
 import { File, Paths } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
+import { Btn, Card, Muted, Title } from "@/components/ui";
 import { exportBackup, importBackup, validateBackup } from "@/db/backup";
 import { getSetting, setSetting, wipeAll } from "@/db/repo";
 
@@ -73,11 +73,21 @@ export default function Settings() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Theme</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {(["light", "dark", "system"] as const).map((m) => (
-              <Chip key={m} label={m} active={mode === m} onPress={() => setMode(m)} />
-            ))}
-          </View>
+          <Host style={{ width: "100%", height: 48 }}>
+            <Picker
+              label="Appearance"
+              selection={mode}
+              onSelectionChange={(v) => setMode(v as "light" | "dark" | "system")}
+              modifiers={[
+                pickerStyle("menu"),
+                environment("colorScheme", isDark ? "dark" : "light"),
+              ]}
+            >
+              <UIText modifiers={[tag("light")]}>Light</UIText>
+              <UIText modifiers={[tag("dark")]}>Dark</UIText>
+              <UIText modifiers={[tag("system")]}>System</UIText>
+            </Picker>
+          </Host>
         </Card>
 
         <Card>
