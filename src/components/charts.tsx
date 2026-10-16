@@ -206,9 +206,11 @@ export function LineChart({
     [doTap, setLock]
   );
 
+  // NOTE: pinch temporarily unwired to test whether it interferes with pan.
+  void pinchGesture;
   const composed = useMemo(
-    () => Gesture.Exclusive(pinchGesture, pan, tapGesture),
-    [pinchGesture, pan, tapGesture]
+    () => Gesture.Exclusive(pan, tapGesture),
+    [pan, tapGesture]
   );
 
   const n = points.length;
