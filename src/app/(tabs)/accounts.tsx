@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { ActionSheetIOS, Alert, findNodeHandle, Pressable, ScrollView, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
@@ -7,6 +7,8 @@ import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Muted, Title } from "@/components/ui";
+import { Host, Menu, Button as UIButton, Text as UIText } from "@expo/ui/swift-ui";
+import { foregroundStyle } from "@expo/ui/swift-ui/modifiers";
 import { SheetHost } from "@/components/SheetHost";
 import AccountForm from "@/components/AccountForm";
 import { deleteAccount, saveAccount } from "@/db/repo";
@@ -23,6 +25,7 @@ export default function Accounts() {
   const [showArchived, setShowArchived] = useState(false);
   const [acctOpen, setAcctOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
+  const rowRefs = useRef<Record<string, number | null>>({});
 
   const openNew = () => {
     setEditingId(undefined);
@@ -104,55 +107,75 @@ export default function Accounts() {
             <Muted style={{ marginBottom: 6, fontWeight: "700" }}>{cat.toUpperCase()}</Muted>
             {list.map((a) => {
               const pos = lkp.byAccount[a.id];
+              const archLabel = a.archived ? "Restore" : "Archive";
+              const openActions = () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                ActionSheetIOS.showActionSheetWithOptions(
+                  {
+                    options: ["Cancel", "Edit", archLabel, "Delete"],
+                    cancelButtonIndex: 0,
+                    destructiveButtonIndex: 3,
+                    anchor: rowRefs.current[a.id] ?? undefined,
+                  },
+                  (idx) => {
+                    if (idx === 1) openEdit(a.id);
+                    else if (idx === 2) archive(a.id, !a.archived);
+                    else if (idx === 3) remove(a.id);
+                  }
+                );
+              };
               return (
-                <Pressable
+                <View
                   key={a.id}
-                  onPress={() => router.push(`/account/${a.id}`)}
                   style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8, opacity: a.archived ? 0.6 : 1 }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: a.color ?? COLORS[0], marginRight: 8 }} />
-                    <Text style={{ color: theme.text, fontWeight: "700", flex: 1 }}>{a.name}{a.archived ? " (archived)" : ""}</Text>
-                    <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
-                      {pos ? formatMoney(pos.converted, reportingCurrency, locale) : "—"}
-                    </Text>
-                  </View>
-                  <Muted>
-                    {a.kind} · {a.currency}
-                    {pos ? ` · as of ${pos.observedAt.slice(0, 10)}` : " · never observed (not zero)"}
-                  </Muted>
-                  <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
-                    {[
-                      { label: "Edit", color: theme.primary, onPress: () => openEdit(a.id) },
-                      { label: a.archived ? "Restore" : "Archive", color: theme.primary, onPress: () => archive(a.id, !a.archived) },
-                      { label: "Delete", color: theme.danger, onPress: () => remove(a.id) },
-                    ].map((b) => (
-                      <Pressable
-                        key={b.label}
-                        accessibilityRole="button"
-                        accessibilityLabel={`${b.label} ${a.name}`}
-                        hitSlop={4}
-                        onPress={() => {
-                          Haptics.selectionAsync().catch(() => {});
-                          b.onPress();
-                        }}
-                        style={({ pressed }) => ({
-                          flex: 1,
-                          minHeight: 44,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          borderColor: theme.border,
-                          backgroundColor: theme.surface2,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          opacity: pressed ? 0.7 : 1,
-                        })}
+                    <Pressable
+                      style={{ flex: 1 }}
+                      onPress={() => router.push(`/account/${a.id}`)}
+                      onLongPress={openActions}
+                      ref={(el) => {
+                        rowRefs.current[a.id] = el ? findNodeHandle(el) : null;
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: a.color ?? COLORS[0], marginRight: 8 }} />
+                        <Text style={{ color: theme.text, fontWeight: "700", flex: 1 }}>{a.name}{a.archived ? " (archived)" : ""}</Text>
+                        <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
+                          {pos ? formatMoney(pos.converted, reportingCurrency, locale) : "—"}
+                        </Text>
+                      </View>
+                      <Muted>
+                        {a.kind} · {a.currency}
+                        {pos ? ` · as of ${pos.observedAt.slice(0, 10)}` : " · never observed (not zero)"}
+                      </Muted>
+                    </Pressable>
+                    <Host style={{ width: 44, height: 44 }}>
+                      <Menu
+                        label={
+                          <UIText modifiers={[foregroundStyle(theme.muted)]}>•••</UIText>
+                        }
                       >
-                        <Text style={{ color: b.color, fontWeight: "700", fontSize: 13 }}>{b.label}</Text>
-                      </Pressable>
-                    ))}
+                        <UIButton
+                          label="Edit"
+                          systemImage="pencil"
+                          onPress={() => openEdit(a.id)}
+                        />
+                        <UIButton
+                          label={archLabel}
+                          systemImage="archivebox"
+                          onPress={() => archive(a.id, !a.archived)}
+                        />
+                        <UIButton
+                          label="Delete"
+                          systemImage="trash"
+                          role="destructive"
+                          onPress={() => remove(a.id)}
+                        />
+                      </Menu>
+                    </Host>
                   </View>
-                </Pressable>
+                </View>
               );
             })}
           </View>
