@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { Alert, ScrollView, Share, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
-import { Host, Toggle, Picker, Text as UIText } from "@expo/ui/swift-ui";
-import { environment, tint, pickerStyle, tag, foregroundStyle } from "@expo/ui/swift-ui/modifiers";
+import { Host, Toggle } from "@expo/ui/swift-ui";
+import { environment, tint } from "@expo/ui/swift-ui/modifiers";
 import { File, Paths } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Muted, Title } from "@/components/ui";
+import { ThemeMenu } from "@/components/ThemeMenu";
 import { exportBackup, importBackup, validateBackup } from "@/db/backup";
 import { getSetting, setSetting, wipeAll } from "@/db/repo";
 
 export default function Settings() {
-  const { theme, mode, setMode, isDark } = useTheme();
+  const { theme, isDark } = useTheme();
   const db = useSQLiteContext();
   const app = useApp();
   const [lock, setLock] = useState(false);
@@ -73,33 +74,7 @@ export default function Settings() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Theme</Text>
-          <View
-            style={{
-              backgroundColor: theme.surface2,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: theme.border,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Host style={{ width: "100%", height: 48 }}>
-              <Picker
-                label="Appearance"
-                selection={mode}
-                onSelectionChange={(v) => setMode(v as "light" | "dark" | "system")}
-                modifiers={[
-                  pickerStyle("menu"),
-                  environment("colorScheme", isDark ? "dark" : "light"),
-                  tint(theme.primary),
-                  foregroundStyle({ type: "hierarchical", style: "primary" }),
-                ]}
-              >
-                <UIText modifiers={[tag("light")]}>Light</UIText>
-                <UIText modifiers={[tag("dark")]}>Dark</UIText>
-                <UIText modifiers={[tag("system")]}>System</UIText>
-              </Picker>
-            </Host>
-          </View>
+          <ThemeMenu />
         </Card>
 
         <Card>
