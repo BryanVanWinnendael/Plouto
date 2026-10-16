@@ -109,7 +109,6 @@ export default function History() {
         }
       >
         <Title>History</Title>
-        <Muted>Actual recorded snapshots — sparse points are shown honestly.</Muted>
 
         <View style={{ marginBottom: spacing.l, marginTop: spacing.s }}>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Allocation</Text>

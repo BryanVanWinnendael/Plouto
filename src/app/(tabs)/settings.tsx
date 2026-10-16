@@ -70,7 +70,6 @@ export default function Settings() {
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
       >
         <Title>Settings</Title>
-        <Muted>Private by design — everything stays on this device.</Muted>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Theme</Text>

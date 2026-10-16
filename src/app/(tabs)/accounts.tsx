@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
+import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
@@ -94,7 +95,6 @@ export default function Accounts() {
             <Text style={{ color: theme.primary }}>{showArchived ? "Hide archived" : "Show archived"}</Text>
           </Pressable>
         </View>
-        <Muted>Stale values are labeled — never shown as live balances.</Muted>
         <View style={{ marginVertical: 10 }}>
           <Btn label="+ New account" onPress={openNew} />
         </View>
@@ -121,10 +121,36 @@ export default function Accounts() {
                     {a.kind} · {a.currency}
                     {pos ? ` · as of ${pos.observedAt.slice(0, 10)}` : " · never observed (not zero)"}
                   </Muted>
-                  <View style={{ flexDirection: "row", gap: 12, marginTop: 6 }}>
-                    <Pressable onPress={() => openEdit(a.id)}><Text style={{ color: theme.primary, fontSize: 12 }}>Edit</Text></Pressable>
-                    <Pressable onPress={() => archive(a.id, !a.archived)}><Text style={{ color: theme.primary, fontSize: 12 }}>{a.archived ? "Restore" : "Archive"}</Text></Pressable>
-                    <Pressable onPress={() => remove(a.id)}><Text style={{ color: theme.danger, fontSize: 12 }}>Delete</Text></Pressable>
+                  <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+                    {[
+                      { label: "Edit", color: theme.primary, onPress: () => openEdit(a.id) },
+                      { label: a.archived ? "Restore" : "Archive", color: theme.primary, onPress: () => archive(a.id, !a.archived) },
+                      { label: "Delete", color: theme.danger, onPress: () => remove(a.id) },
+                    ].map((b) => (
+                      <Pressable
+                        key={b.label}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${b.label} ${a.name}`}
+                        hitSlop={4}
+                        onPress={() => {
+                          Haptics.selectionAsync().catch(() => {});
+                          b.onPress();
+                        }}
+                        style={({ pressed }) => ({
+                          flex: 1,
+                          minHeight: 44,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: theme.border,
+                          backgroundColor: theme.surface2,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          opacity: pressed ? 0.7 : 1,
+                        })}
+                      >
+                        <Text style={{ color: b.color, fontWeight: "700", fontSize: 13 }}>{b.label}</Text>
+                      </Pressable>
+                    ))}
                   </View>
                 </Pressable>
               );
