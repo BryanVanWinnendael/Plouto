@@ -79,18 +79,18 @@ export default function SnapshotDetail() {
         )}
         <Muted>Observed {format(new Date(snap.observedAt), "d MMM yyyy, HH:mm")} · entered {format(new Date(snap.createdAt), "d MMM yyyy, HH:mm")}</Muted>
 
-        <Card>
-          <Muted>Net worth (recorded in this snapshot)</Muted>
-          <Text style={{ color: theme.text, fontSize: 28, fontWeight: "800", fontVariant: ["tabular-nums"] }}>
+        <View style={{ marginBottom: spacing.l, marginTop: spacing.s }}>
+          <Muted style={{ marginBottom: 6 }}>Net worth (recorded in this snapshot)</Muted>
+          <Text style={{ color: theme.text, fontSize: 32, fontWeight: "800", fontVariant: ["tabular-nums"] }}>
             {formatMoney(totals.netWorth, app.reportingCurrency, app.locale)}
           </Text>
-          <Muted>Assets {formatMoney(totals.assets, app.reportingCurrency, app.locale)} · Liabilities {formatMoney(totals.liabilities, app.reportingCurrency, app.locale)}</Muted>
+          <Muted style={{ marginTop: 6 }}>Assets {formatMoney(totals.assets, app.reportingCurrency, app.locale)} · Liabilities {formatMoney(totals.liabilities, app.reportingCurrency, app.locale)}</Muted>
           {totals.missingAccountIds.length > 0 && (
-            <Muted style={{ marginTop: 4 }}>
+            <Muted style={{ marginTop: 6 }}>
               Coverage: {totals.observedAccountIds.length} observed, {totals.missingAccountIds.length} not observed (excluded, not zero).
             </Muted>
           )}
-        </Card>
+        </View>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Observations</Text>

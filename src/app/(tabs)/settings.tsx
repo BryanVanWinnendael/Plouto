@@ -106,7 +106,6 @@ export default function Settings() {
           <Muted>
             • No backend, no accounts, no sync, no bank connections, no analytics, no ads, no AI calls.{"\n"}
             • Data lives in this app's private SQLite database and works fully offline.{"\n"}
-            • Local storage ≠ encryption. Device security (passcode, OS sandbox) protects data at rest; the database file itself is not encrypted unless SQLCipher is enabled in a custom build.{"\n"}
             • No balances or notes are logged.
           </Muted>
         </Card>
