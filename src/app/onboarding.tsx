@@ -8,7 +8,7 @@ import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Muted, Title } from "@/components/ui";
 import { Host, Picker, Text as UIText } from "@expo/ui/swift-ui";
-import { environment, pickerStyle, tag, tint } from "@expo/ui/swift-ui/modifiers";
+import { environment, pickerStyle, tag, tint, foregroundStyle } from "@expo/ui/swift-ui/modifiers";
 import { setSetting } from "@/db/repo";
 import { seedDemo } from "@/lib/demo";
 
@@ -68,6 +68,7 @@ export default function Onboarding() {
                     pickerStyle("menu"),
                     environment("colorScheme", isDark ? "dark" : "light"),
                     tint(theme.primary),
+                    foregroundStyle({ type: "hierarchical", style: "primary" }),
                   ]}
                 >
                   <UIText modifiers={[tag("light")]}>Light</UIText>

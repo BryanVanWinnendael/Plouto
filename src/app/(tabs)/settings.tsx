@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Alert, ScrollView, Share, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, Toggle, Picker, Text as UIText } from "@expo/ui/swift-ui";
-import { environment, tint, pickerStyle, tag } from "@expo/ui/swift-ui/modifiers";
+import { environment, tint, pickerStyle, tag, foregroundStyle } from "@expo/ui/swift-ui/modifiers";
 import { File, Paths } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import { useApp } from "@/store/AppContext";
@@ -91,6 +91,7 @@ export default function Settings() {
                   pickerStyle("menu"),
                   environment("colorScheme", isDark ? "dark" : "light"),
                   tint(theme.primary),
+                  foregroundStyle({ type: "hierarchical", style: "primary" }),
                 ]}
               >
                 <UIText modifiers={[tag("light")]}>Light</UIText>
