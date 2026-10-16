@@ -34,7 +34,6 @@ export default function Onboarding() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: 16 }}
       >
-        <Text style={{ fontSize: 44, color: theme.text }}>◈</Text>
         <Title style={{ fontSize: 30, marginTop: 8 }}>Plouto</Title>
         <Text style={{ color: theme.muted, fontSize: 16, marginTop: 8, lineHeight: 24 }}>
           Track your wealth on your terms. Add your accounts, record balances whenever you want, and see how your net worth evolves. Your financial data stays on this device.
