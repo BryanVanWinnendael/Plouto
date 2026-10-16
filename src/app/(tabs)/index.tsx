@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
@@ -27,8 +27,12 @@ export default function Overview() {
   const [range, setRange] = useState<number | null>(null);
   const [showAssets, setShowAssets] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [chartTouch, setChartTouch] = useState(false);
   const [snapOpen, setSnapOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  // Lock page scroll without re-rendering (a re-render mid-gesture disturbs tracking).
+  const setChartTouch = useCallback((v: boolean) => {
+    scrollRef.current?.setNativeProps({ scrollEnabled: !v });
+  }, []);
 
   /** Pinch past the chart limits steps the time range (zoom in = shorter range). */
   const stepRange = (dir: 1 | -1) => {
@@ -72,7 +76,7 @@ export default function Overview() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        scrollEnabled={!chartTouch}
+        ref={scrollRef}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}

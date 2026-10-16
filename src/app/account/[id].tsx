@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -15,7 +15,10 @@ export default function AccountDetail() {
   const { theme } = useTheme();
   const app = useApp();
   const account = useMemo(() => app.accounts.find((a) => a.id === id), [app.accounts, id]);
-  const [chartTouch, setChartTouch] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const setChartTouch = useCallback((v: boolean) => {
+    scrollRef.current?.setNativeProps({ scrollEnabled: !v });
+  }, []);
 
   const points = useMemo(() => {
     if (!account) return [];
@@ -47,7 +50,7 @@ export default function AccountDetail() {
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
-        scrollEnabled={!chartTouch}
+        ref={scrollRef}
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: spacing.l, paddingBottom: 16 }}
