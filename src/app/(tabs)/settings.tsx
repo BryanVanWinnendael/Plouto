@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Alert, Pressable, ScrollView, Share, Text, TextInput, View } from "react-native";
+import { Alert, ScrollView, Share, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, Toggle } from "@expo/ui/swift-ui";
 import { environment, tint } from "@expo/ui/swift-ui/modifiers";
@@ -10,15 +10,12 @@ import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
 import { Btn, Card, Chip, Muted, Title } from "@/components/ui";
 import { exportBackup, importBackup, validateBackup } from "@/db/backup";
-import { getSetting, setSetting, wipeAll, saveRate } from "@/db/repo";
-import { parseMoneyInput } from "@/finance/money";
+import { getSetting, setSetting, wipeAll } from "@/db/repo";
 
 export default function Settings() {
   const { theme, mode, setMode, isDark } = useTheme();
   const db = useSQLiteContext();
   const app = useApp();
-  const [from, setFrom] = useState("EUR");
-  const [rate, setRate] = useState("");
   const [lock, setLock] = useState(false);
 
   React.useEffect(() => {
@@ -64,18 +61,6 @@ export default function Settings() {
     }
   };
 
-  const addRate = async () => {
-    const parsed = parseMoneyInput(rate);
-    if (!parsed || Number(parsed) <= 0) { Alert.alert("Invalid rate", "Enter a positive number."); return; }
-    await saveRate(db, {
-      fromCurrency: from, toCurrency: app.reportingCurrency,
-      rate: parsed, effectiveDate: new Date().toISOString(),
-    });
-    setRate("");
-    await app.refresh();
-    Alert.alert("Saved", `1 ${from} = ${parsed} ${app.reportingCurrency} (effective now).`);
-  };
-
   return (
     <View collapsable={false} style={{ flex: 1, backgroundColor: theme.bg }}>
       <ScrollView
@@ -93,25 +78,6 @@ export default function Settings() {
               <Chip key={m} label={m} active={mode === m} onPress={() => setMode(m)} />
             ))}
           </View>
-        </Card>
-
-        <Card>
-          <Text style={{ color: theme.text, fontWeight: "700" }}>Manual exchange rates</Text>
-          <Muted>No external rate fetching. Each observation uses the latest rate on/before its date — or the earliest available rate when none predates it. No rate at all → incomplete total (never invented).</Muted>
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
-            <TextInput value={from} onChangeText={(t) => setFrom(t.toUpperCase())} maxLength={3} autoCapitalize="characters"
-              style={{ backgroundColor: theme.surface2, color: theme.text, borderRadius: 8, padding: 10, width: 70, textAlign: "center" }} />
-            <Text style={{ color: theme.muted }}>→ {app.reportingCurrency}</Text>
-            <TextInput value={rate} onChangeText={setRate} keyboardType="decimal-pad" placeholder="1.08"
-              placeholderTextColor={theme.muted}
-              style={{ flex: 1, backgroundColor: theme.surface2, color: theme.text, borderRadius: 8, padding: 10 }} />
-            <Pressable onPress={addRate} style={{ backgroundColor: theme.primary, borderRadius: 8, padding: 10 }}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Add</Text>
-            </Pressable>
-          </View>
-          {app.rates.slice(0, 5).map((r) => (
-            <Muted key={r.id}>1 {r.fromCurrency} = {r.rate} {r.toCurrency} · from {r.effectiveDate.slice(0, 10)}</Muted>
-          ))}
         </Card>
 
         <Card>
