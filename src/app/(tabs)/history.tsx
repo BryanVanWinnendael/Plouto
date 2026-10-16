@@ -235,8 +235,13 @@ export default function History() {
             tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
             style={StyleSheet.absoluteFill}
           />
-          <View style={{ padding: 12 }}>
-            <Btn label="Compare selected" onPress={() => router.push(`/snapshot/compare?a=${selected[0]}&b=${selected[1]}`)} />
+          <View style={{ padding: 12, flexDirection: "row", gap: 8 }}>
+            <View style={{ flex: 2 }}>
+              <Btn label="Compare selected" onPress={() => router.push(`/snapshot/compare?a=${selected[0]}&b=${selected[1]}`)} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Btn label="Clear" variant="ghost" onPress={() => setSelected([])} />
+            </View>
           </View>
         </View>
       )}
