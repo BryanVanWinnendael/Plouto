@@ -73,21 +73,31 @@ export default function Settings() {
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Theme</Text>
-          <Host style={{ width: "100%", height: 48 }}>
-            <Picker
-              label="Appearance"
-              selection={mode}
-              onSelectionChange={(v) => setMode(v as "light" | "dark" | "system")}
-              modifiers={[
-                pickerStyle("menu"),
-                environment("colorScheme", isDark ? "dark" : "light"),
-              ]}
-            >
-              <UIText modifiers={[tag("light")]}>Light</UIText>
-              <UIText modifiers={[tag("dark")]}>Dark</UIText>
-              <UIText modifiers={[tag("system")]}>System</UIText>
-            </Picker>
-          </Host>
+          <View
+            style={{
+              backgroundColor: theme.surface2,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: theme.border,
+              paddingHorizontal: 12,
+            }}
+          >
+            <Host style={{ width: "100%", height: 48 }}>
+              <Picker
+                label="Appearance"
+                selection={mode}
+                onSelectionChange={(v) => setMode(v as "light" | "dark" | "system")}
+                modifiers={[
+                  pickerStyle("menu"),
+                  environment("colorScheme", isDark ? "dark" : "light"),
+                ]}
+              >
+                <UIText modifiers={[tag("light")]}>Light</UIText>
+                <UIText modifiers={[tag("dark")]}>Dark</UIText>
+                <UIText modifiers={[tag("system")]}>System</UIText>
+              </Picker>
+            </Host>
+          </View>
         </Card>
 
         <Card>
