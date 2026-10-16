@@ -121,8 +121,7 @@ export function LineChart({
   const pan = useMemo(
     () =>
       Gesture.Pan()
-        .activeOffsetX([-14, 14])
-        .failOffsetY([-10, 10])
+        .activeOffsetX([-10, 10])
         .onTouchesDown(() => {
           'worklet';
           runOnJS(setLock)(true);
