@@ -21,7 +21,6 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
   const [category, setCategory] = useState(
     existing?.category ?? "Checking"
   );
-  const [currency, setCurrency] = useState(existing?.currency ?? app.reportingCurrency);
   const [liquidity, setLiquidity] = useState<"liquid" | "semi_liquid" | "illiquid">(
     existing?.liquidity ?? "liquid"
   );
@@ -36,7 +35,7 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
       name: name.trim(),
       kind,
       category,
-      currency: currency.toUpperCase() || app.reportingCurrency,
+      currency: existing?.currency ?? app.reportingCurrency,
       liquidity: liquidity as "liquid",
       sortOrder: existing?.sortOrder ?? app.accounts.length,
       archived: existing?.archived ?? 0,
@@ -116,41 +115,23 @@ export default function AccountForm({ accountId, onClose }: { accountId?: string
           ))}
         </View>
 
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.text, fontWeight: "600" }}>Currency</Text>
-            <TextInput
-              value={currency}
-              onChangeText={setCurrency}
-              autoCapitalize="characters"
-              maxLength={3}
+        <Text style={{ color: theme.text, marginTop: 16, fontWeight: "600" }}>Liquidity</Text>
+        <View style={{ flexDirection: "row", gap: 6, marginTop: 8 }}>
+          {(["liquid", "semi_liquid", "illiquid"] as const).map((l) => (
+            <Pressable
+              key={l}
+              onPress={() => setLiquidity(l)}
               style={{
-                backgroundColor: sheet.surface, color: theme.text,
-                borderColor: theme.border, borderWidth: 1, borderRadius: 10,
-                padding: 12, marginTop: 6, fontSize: 16,
+                flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, alignItems: "center",
+                borderColor: liquidity === l ? theme.primary : theme.border,
+                backgroundColor: liquidity === l ? theme.primarySoft : sheet.surface,
               }}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.text, fontWeight: "600" }}>Liquidity</Text>
-            <View style={{ flexDirection: "row", gap: 6, marginTop: 6 }}>
-              {(["liquid", "semi_liquid", "illiquid"] as const).map((l) => (
-                <Pressable
-                  key={l}
-                  onPress={() => setLiquidity(l)}
-                  style={{
-                    flex: 1, padding: 8, borderRadius: 8, borderWidth: 1, alignItems: "center",
-                    borderColor: liquidity === l ? theme.primary : theme.border,
-                    backgroundColor: liquidity === l ? theme.primarySoft : sheet.surface,
-                  }}
-                >
-                  <Text numberOfLines={1} style={{ color: theme.text, fontSize: 11 }}>
-                    {l.replace("_", " ")}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
+            >
+              <Text numberOfLines={1} style={{ color: theme.text, fontSize: 13, fontWeight: liquidity === l ? "700" : "500" }}>
+                {l.replace("_", " ")}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
       </ScrollView>
