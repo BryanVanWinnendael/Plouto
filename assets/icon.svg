@@ -31,11 +31,6 @@
     stroke-linecap="round"
     stroke-linejoin="round"
   />
-  <!-- diamond node -->
-  <g transform="translate(796,326)">
-    <polygon points="0,-78 62,0 0,78 -62,0" fill="#7FD6A4"/>
-    <polygon points="0,-78 62,0 0,0 -62,0" fill="#FFFFFF" fill-opacity="0.25"/>
-  </g>
   <!-- origin dot -->
   <circle cx="212" cy="724" r="26" fill="#1E6B45"/>
 </svg>
