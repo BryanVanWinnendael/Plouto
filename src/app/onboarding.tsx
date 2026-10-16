@@ -67,6 +67,7 @@ export default function Onboarding() {
                   modifiers={[
                     pickerStyle("menu"),
                     environment("colorScheme", isDark ? "dark" : "light"),
+                    tint(theme.primary),
                   ]}
                 >
                   <UIText modifiers={[tag("light")]}>Light</UIText>

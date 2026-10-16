@@ -90,6 +90,7 @@ export default function Settings() {
                 modifiers={[
                   pickerStyle("menu"),
                   environment("colorScheme", isDark ? "dark" : "light"),
+                  tint(theme.primary),
                 ]}
               >
                 <UIText modifiers={[tag("light")]}>Light</UIText>
