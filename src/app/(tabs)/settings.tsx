@@ -13,8 +13,6 @@ import { exportBackup, importBackup, validateBackup } from "@/db/backup";
 import { getSetting, setSetting, wipeAll, saveRate } from "@/db/repo";
 import { parseMoneyInput } from "@/finance/money";
 
-const CURRENCIES = ["USD", "EUR", "GBP", "CHF", "JPY", "CAD", "AUD", "SEK", "NOK", "DKK"];
-
 export default function Settings() {
   const { theme, mode, setMode, isDark } = useTheme();
   const db = useSQLiteContext();
@@ -87,15 +85,6 @@ export default function Settings() {
       >
         <Title>Settings</Title>
         <Muted>Private by design — everything stays on this device.</Muted>
-
-        <Card>
-          <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Reporting currency</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {CURRENCIES.map((c) => (
-              <Chip key={c} label={c} active={app.reportingCurrency === c} onPress={() => app.setReportingCurrency(c)} />
-            ))}
-          </View>
-        </Card>
 
         <Card>
           <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Theme</Text>
