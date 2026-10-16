@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
 import { spacing } from "@/theme/tokens";
-import { BackButton, Card, Muted, Title } from "@/components/ui";
+import { BackButton, Muted, Title } from "@/components/ui";
 import { LineChart } from "@/components/charts";
 import { formatMoney, formatMoneyCompact, pctChange, toDecimal } from "@/finance/money";
 
@@ -59,31 +59,30 @@ export default function AccountDetail() {
         <Title style={{ marginTop: 8 }}>{account.name}</Title>
         <Muted>{account.kind} · {account.category} · {account.currency}{account.institution ? ` · ${account.institution}` : ""}</Muted>
 
-        <Card>
-          <Muted>Latest recorded balance{last ? ` · as of ${format(new Date((last as unknown as { at: string }).at), "d MMM yyyy")}` : ""}</Muted>
-          <Text style={{ color: theme.text, fontSize: 28, fontWeight: "800" }}>
+        <View style={{ marginBottom: spacing.xl, marginTop: spacing.s }}>
+          <Muted style={{ marginBottom: 6 }}>Latest recorded balance{last ? ` · as of ${format(new Date((last as unknown as { at: string }).at), "d MMM yyyy")}` : ""}</Muted>
+          <Text style={{ color: theme.text, fontSize: 32, fontWeight: "800", fontVariant: ["tabular-nums"] }}>
             {last ? formatMoney(last.value, app.reportingCurrency, app.locale) : "Never observed (not zero)"}
           </Text>
           {chg && (
-            <Text style={{ color: toDecimal(chg).gte(0) ? theme.gain : theme.loss, fontWeight: "700" }}>
+            <Text style={{ color: toDecimal(chg).gte(0) ? theme.gain : theme.loss, fontWeight: "700", marginTop: 6 }}>
               {toDecimal(chg).gte(0) ? "+" : ""}{formatMoney(chg, app.reportingCurrency, app.locale)}
               {pct !== null ? ` (${Number(pct).toFixed(1)}%)` : ""}
             </Text>
           )}
-          {stale && last && <Muted style={{ color: theme.warn }}>Stale — last observation over 45 days ago. Not a live balance.</Muted>}
-        </Card>
+          {stale && last && <Muted style={{ color: theme.warn, marginTop: 6 }}>Stale — last observation over 45 days ago. Not a live balance.</Muted>}
+        </View>
 
-        <Card>
-          <Text style={{ color: theme.text, fontWeight: "700", marginBottom: 8 }}>Balance history</Text>
+        <View style={{ marginBottom: spacing.l }}>
           <LineChart
             points={points}
             formatY={(v) => formatMoney(v, app.reportingCurrency, app.locale)}
             formatAxis={(v) => formatMoneyCompact(v, app.reportingCurrency, app.locale)}
             onTouchStateChange={setChartTouch}
           />
-        </Card>
+        </View>
 
-        {account.notes ? <Card><Muted>{account.notes}</Muted></Card> : null}
+        {account.notes ? <Muted style={{ marginBottom: spacing.l }}>{account.notes}</Muted> : null}
         <View style={{ height: 8 }} />
       </ScrollView>
     </View>

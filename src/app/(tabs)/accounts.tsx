@@ -129,7 +129,7 @@ export default function Accounts() {
                   key={a.id}
                   style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8, opacity: a.archived ? 0.6 : 1 }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flexDirection: "row" }}>
                     <Pressable
                       style={{ flex: 1 }}
                       onPress={() => router.push(`/account/${a.id}`)}
@@ -138,7 +138,7 @@ export default function Accounts() {
                         rowRefs.current[a.id] = el ? findNodeHandle(el) : null;
                       }}
                     >
-                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <View style={{ flexDirection: "row", alignItems: "center", minHeight: 32 }}>
                         <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: a.color ?? COLORS[0], marginRight: 8 }} />
                         <Text style={{ color: theme.text, fontWeight: "700", flex: 1 }}>{a.name}{a.archived ? " (archived)" : ""}</Text>
                         <Text style={{ color: theme.text, fontWeight: "700", fontVariant: ["tabular-nums"] }}>
@@ -150,7 +150,7 @@ export default function Accounts() {
                         {pos ? ` · as of ${pos.observedAt.slice(0, 10)}` : " · never observed (not zero)"}
                       </Muted>
                     </Pressable>
-                    <Host style={{ width: 44, height: 44 }}>
+                    <Host style={{ width: 40, height: 32 }}>
                       <Menu
                         label={
                           <UIText modifiers={[foregroundStyle(theme.muted)]}>•••</UIText>
