@@ -15,10 +15,12 @@ interface AppState {
   locale: string | undefined;
   chartRange: string;
   onboarded: boolean;
+  appLock: boolean;
   fx: ConversionContext;
   accountsById: Map<string, Account>;
   refresh: () => Promise<void>;
   setReportingCurrency: (c: string) => Promise<void>;
+  setAppLock: (v: boolean) => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -33,21 +35,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [reportingCurrency, setRC] = useState("USD");
   const [chartRange, setChartRange] = useState("ALL");
   const [onboarded, setOnboarded] = useState(false);
+  const [appLock, setAppLockState] = useState(false);
   const [locale, setLocale] = useState<string | undefined>(undefined);
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
 
   const refresh = useCallback(async () => {
     const d: SQLiteDatabase = db;
-    const [a, s, c, r, rc, ob, cr] = await Promise.all([
+    const [a, s, c, r, rc, ob, cr, al] = await Promise.all([
       getAccounts(d), getSnapshotsWithEntries(d),
       getCategories(d), getRates(d),
       getSetting(d, "reportingCurrency"), getSetting(d, "onboarded"), getSetting(d, "chartRange"),
+      getSetting(d, "appLock"),
     ]);
     if (!mounted.current) return;
     setAccounts(a); setSnapshots(s); setCategories(c); setRates(r);
     if (rc) setRC(rc);
     setOnboarded(ob === "1");
+    setAppLockState(al === "1");
     if (cr) setChartRange(cr);
     try {
       const { getLocales } = require("expo-localization");
@@ -63,6 +68,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await setSetting(db, "reportingCurrency", c.toUpperCase());
   }, [db]);
 
+  const setAppLock = useCallback(async (v: boolean) => {
+    setAppLockState(v);
+    await setSetting(db, "appLock", v ? "1" : "0");
+  }, [db]);
+
   const fx = useMemo(() => makeFxConverter(reportingCurrency, rates.map((r) => ({
     fromCurrency: r.fromCurrency, toCurrency: r.toCurrency, rate: r.rate, effectiveDate: r.effectiveDate,
   }))), [reportingCurrency, rates]);
@@ -71,8 +81,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value: AppState = {
     ready, accounts, snapshots, categories, rates,
-    reportingCurrency, locale, chartRange, onboarded, fx, accountsById,
-    refresh, setReportingCurrency,
+    reportingCurrency, locale, chartRange, onboarded, appLock, fx, accountsById,
+    refresh, setReportingCurrency, setAppLock,
   };
   void latestKnownPosition;
   void totalsForSnapshot;

@@ -30,14 +30,83 @@ export default function RootLayout() {
 
 import { useApp } from "@/store/AppContext";
 import { useTheme } from "@/theme/ThemeContext";
-import React from "react";
+import { Btn, Muted, Title } from "@/components/ui";
+import React, { useCallback, useEffect, useState } from "react";
+import { AppState, View } from "react-native";
+import { spacing } from "@/theme/tokens";
+import * as LocalAuthentication from "expo-local-authentication";
 
 function AppGate() {
   return (
     <AppProvider>
-      <ThemedStack />
+      <LockGate>
+        <ThemedStack />
+      </LockGate>
     </AppProvider>
   );
+}
+
+/**
+ * App lock gate: when enabled in Settings, the app content stays hidden
+ * behind device authentication (biometrics or device passcode).
+ * Re-locks whenever the app leaves the foreground. This gates access —
+ * it is not database encryption (see PRIVACY.md).
+ */
+function LockGate({ children }: { children: React.ReactNode }) {
+  const { ready, appLock } = useApp();
+  const { theme } = useTheme();
+  const [unlocked, setUnlocked] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
+
+  const authenticate = useCallback(async () => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Unlock Plouto",
+        fallbackLabel: "Use passcode",
+      });
+      if (result.success) {
+        setFailed(null);
+        setUnlocked(true);
+      } else {
+        setFailed("Not unlocked. Try again.");
+      }
+    } catch {
+      setFailed("Authentication is not available on this device.");
+    }
+  }, []);
+
+  useEffect(() => {
+    setUnlocked(false);
+    setFailed(null);
+  }, [appLock]);
+
+  useEffect(() => {
+    if (ready && appLock && !unlocked) authenticate();
+  }, [ready, appLock, unlocked, authenticate]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (s) => {
+      if (s !== "active") setUnlocked(false);
+    });
+    return () => sub.remove();
+  }, []);
+
+  if (!ready) return null;
+  if (appLock && !unlocked) {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.bg, alignItems: "center", justifyContent: "center", padding: spacing.xl }}>
+        <Title>Plouto is locked</Title>
+        <Muted style={{ marginTop: 8, textAlign: "center" }}>
+          Authenticate with Face ID, fingerprint, or your device passcode to continue.
+        </Muted>
+        {failed && <Muted style={{ marginTop: 8, color: theme.danger }}>{failed}</Muted>}
+        <View style={{ width: "100%", marginTop: 20 }}>
+          <Btn label="Unlock" onPress={authenticate} />
+        </View>
+      </View>
+    );
+  }
+  return <>{children}</>;
 }
 
 function ThemedStack() {

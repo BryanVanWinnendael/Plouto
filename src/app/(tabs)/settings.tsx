@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Alert, ScrollView, Share, Text, View } from "react-native";
 import { useSQLiteContext } from "expo-sqlite";
 import { Host, Toggle } from "@expo/ui/swift-ui";
@@ -11,17 +11,13 @@ import { spacing } from "@/theme/tokens";
 import { Btn, Card, Muted, Title } from "@/components/ui";
 import { ThemeMenu } from "@/components/ThemeMenu";
 import { exportBackup, importBackup, validateBackup } from "@/db/backup";
-import { getSetting, setSetting, wipeAll } from "@/db/repo";
+import { wipeAll } from "@/db/repo";
 
 export default function Settings() {
   const { theme, isDark } = useTheme();
   const db = useSQLiteContext();
   const app = useApp();
-  const [lock, setLock] = useState(false);
-
-  React.useEffect(() => {
-    getSetting(db, "appLock").then((v) => setLock(v === "1")).catch(() => {});
-  }, [db]);
+  const lock = app.appLock;
 
   const doExport = async () => {
     try {
@@ -84,8 +80,7 @@ export default function Settings() {
               label="Require authentication"
               isOn={lock}
               onIsOnChange={async (v) => {
-                setLock(v);
-                await setSetting(db, "appLock", v ? "1" : "0");
+                await app.setAppLock(v);
               }}
               modifiers={[environment("colorScheme", isDark ? "dark" : "light"), tint(theme.primary)]}
             />
