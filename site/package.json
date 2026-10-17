@@ -1,0 +1,12 @@
+{
+  "name": "plouto-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve .",
+    "deploy:gh": "git subtree push --prefix site origin gh-pages"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

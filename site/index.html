@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Plouto — Private net worth tracker for iOS. Track assets, liabilities, and net worth locally on your iPhone. No cloud, no tracking, no accounts.">
+  <meta name="theme-color" content="#1E6B45">
+  <title>Plouto — Private net worth tracker for iOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --green: #1E6B45; --green-dark: #14231B; --ink: #14201A; --muted: #5E6E63; --bg: #F7F8F6; --card: #FFFFFF; --border: #E2E8E2; }
+    @media (prefers-color-scheme: dark) { :root { --green: #4CB782; --green-dark: #173528; --ink: #F5F5F7; --muted: #9DB0A4; --bg: #0C1210; --card: #141C18; --border: #233029; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; }
+    a { color: var(--green); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header { padding: 4rem 1.5rem 3rem; text-align: center; background: linear-gradient(180deg, var(--bg) 0%, var(--card) 100%); border-bottom: 1px solid var(--border); }
+    .logo { font-size: 2.5rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .tagline { color: var(--muted); font-size: 1.125rem; max-width: 600px; margin: 0 auto 2rem; }
+    .cta { display: inline-block; background: var(--green); color: #fff; font-weight: 600; padding: 0.875rem 2rem; border-radius: 999px; font-size: 1rem; transition: opacity 0.15s; }
+    .cta:hover { opacity: 0.9; text-decoration: none; }
+    main { max-width: 800px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+    h1 { font-size: 2.25rem; font-weight: 700; color: var(--ink); line-height: 1.2; margin-bottom: 1rem; }
+    h2 { font-size: 1.5rem; font-weight: 600; color: var(--ink); margin-top: 3rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.125rem; font-weight: 600; color: var(--ink); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+    p, li { color: var(--ink); }
+    .muted { color: var(--muted); }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: 0.5rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+    footer { text-align: center; padding: 3rem 1.5rem; color: var(--muted); font-size: 0.875rem; border-top: 1px solid var(--border); }
+    .app-store { display: inline-block; margin-top: 1rem; }
+    .app-store img { height: 40px; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">Plouto</div>
+  <p class="tagline">Your money. Your progress. Your privacy.</p>
+  <a class="cta" href="https://apps.apple.com/app/idYOUR_APP_ID" target="_blank" rel="noopener">Download on the App Store</a>
+</header>
+
+<main>
+  <h1>Plouto — Private Net Worth Tracker for iOS</h1>
+  <p class="muted" style="font-size: 1.125rem;">Track assets, liabilities, and net worth locally on your iPhone. No cloud, no tracking, no accounts.</p>
+
+  <div class="card">
+    <h3>Why Plouto?</h3>
+    <ul>
+      <li><strong>100% on-device:</strong> SQLite database, works fully offline.</li>
+      <li><strong>No accounts, no login:</strong> Open the app and start tracking.</li>
+      <li><strong>No bank connections:</strong> Record balances manually — you stay in control.</li>
+      <li><strong>No cloud, no tracking, no ads:</strong> Your financial data never leaves your iPhone.</li>
+      <li><strong>Optional app lock:</strong> Face ID, Touch ID, or passcode gate.</li>
+      <li><strong>Local encrypted backup:</strong> Export/import encrypted JSON — you hold the file.</li>
+    </ul>
+  </div>
+
+  <h2>Features</h2>
+  <div class="card">
+    <ul>
+      <li><strong>Multi-account tracking:</strong> Checking, savings, investments, crypto, crypto, real estate, loans, credit cards, and custom categories.</      <li><strong>Flexible snapshots:</strong> Record balances whenever you want — no schedule.</li>
+      <li><strong>Honest history:</strong> Interactive charts, allocation donuts, yearly breakdowns — missing data is never invented.</li>
+      <li><strong>Multi-currency:</strong> Per-account currency with manual exchange rates.</li>
+      <li><strong>Decimal-safe math:</strong> Every calculation down to the cent.</li>
+    </ul>
+  </div>
+
+  <h2>Privacy Policy</h2>
+  <p><strong>Effective date:</strong> October 2026</p>
+
+  <div class="card">
+    <h3>Data We Collect</h3>
+    <p><strong>None.</strong> Plouto collects zero personal data, usage analytics, crash reports, or diagnostics. The app has no network permission and cannot transmit data.</p>
+  </div>
+
+  <div class="card">
+    <h3>Data You Store</h3>
+    <p>All financial data you enter — account names, balances, categories, currencies, snapshots, notes, and manual exchange rates — is stored exclusively in a local SQLite database on your device. This data never leaves your device unless you explicitly export a backup file.</p>
+  </div>
+
+  <div class="card">
+    <h3>App Lock (Optional)</h3>
+    <p>If you enable the app lock, Plouto uses Apple's <code>LocalAuthentication</code> framework (Face ID, Touch ID, or device passcode). Biometric data never leaves the Secure Enclave; Plouto only receives a success/failure result.</p>
+  </div>
+
+  <div class="card">
+    <h3>Backups</h3>
+    <p>You may export an encrypted JSON backup at any time. The file is encrypted with a key derived from your device passcode/biometrics via the iOS Keychain. The backup file is yours to store wherever you choose (iCloud Drive, local files, AirDrop, etc.). Plouto never uploads it.</    </div>
+
+  <div class="card">
+    <h3>Third-Party Services</h3>
+    <p><strong>None.</strong> No analytics SDKs, crash reporters, advertising identifiers, or third-party libraries that collect data.</p>
+  </div>
+
+  <div class="card">
+    <h3>Children's Privacy</h3>
+    <p>Plouto is not directed to children under 13. We do not knowingly collect personal information from children.</p>
+  </div>
+
+  <div class="card">
+    <h3>Changes to This Policy</h3>
+    <p>Updates will be posted here with a revised effective date. Continued use after changes constitutes acceptance.</p>
+  </div>
+
+  <div class="card">
+    <h3>Contact</h3>
+    <p>Questions? Email <a href="mailto:bryan.vanwinnendael@skynet.be">bryan.vanwinnendael@skynet.be</a></p>
+  </div>
+
+  <footer>
+    <p>Plouto is a free, open-source project. <a href="https://github.com/BryanVanWinnendael/Plouto">View on GitHub</a></p>
+    <p>&copy; 2026 Plouto. All rights reserved.</  </footer>
+</main>
+</body>
+</html>
