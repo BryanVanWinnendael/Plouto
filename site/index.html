@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Plouto — a private net worth tracker for iPhone. No account, no bank links, no cloud. Your data stays on your device.">
+  <meta name="description" content="No bank login. No account. No cloud. Plouto is a private net worth tracker for iPhone — your balances stay on your device.">
   <meta name="theme-color" content="#0c0b0a">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -61,7 +61,7 @@
       position: relative;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       max-width: 560px;
       margin: 0 auto;
       padding: calc(22px + env(safe-area-inset-top, 0px)) 24px 0;
@@ -104,6 +104,28 @@
     .cta:active { transform: scale(0.97); background: #175a39; }
     @media (hover: hover) and (pointer: fine) {
       .cta:hover { background: #247b4e; text-decoration: none; }
+    }
+
+    .shots {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      overscroll-behavior-inline: contain;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2px;
+    }
+    .shots::-webkit-scrollbar { display: none; }
+    .shots img {
+      flex: 0 0 auto;
+      width: 150px;
+      aspect-ratio: 920 / 2000;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      scroll-snap-align: start;
     }
 
     section { margin-bottom: 62px; }
@@ -159,7 +181,8 @@
   <div class="top">
     <nav aria-label="Sections">
       <a href="#overview">Overview</a>
-      <a href="#privacy">Privacy</a>
+      <a href="#backup">Backup</a>
+      <a href="#privacy-policy">Privacy</a>
       <a href="#contact">Contact</a>
     </nav>
   </div>
@@ -168,9 +191,19 @@
     <header class="hero">
       <h1>Plouto</h1>
       <p class="script">your money, your progress, your privacy</p>
-      <p>A private net worth tracker for iPhone. Add your accounts, record balances whenever you check them, and watch your wealth build over time.</p>
-      <a class="cta" href="https://apps.apple.com/app/idYOUR_APP_ID" target="_blank" rel="noopener">Download for iPhone</a>
+      <p>No bank login. No account. No cloud. Your balances stay on this iPhone — and you record them whenever you check them. Plouto turns those check-ins into net worth over time.</p>
+      <a class="cta" href="https://apps.apple.com/app/plouto-05a63c/id6822832648" target="_blank" rel="noopener">Download for iPhone</a>
     </header>
+
+    <section id="screens">
+      <h2 class="label">Screenshots</h2>
+      <div class="shots" aria-label="Plouto screenshots">
+        <img src="shots/img1.png" width="150" height="326" decoding="async" alt="Net worth overview with a growth chart">
+        <img src="shots/img2.png" width="150" height="326" decoding="async" alt="Allocation donut chart on the History screen">
+        <img src="shots/img3.png" width="150" height="326" decoding="async" alt="Accounts list with balances and dates">
+        <img src="shots/img4.png" width="150" height="326" decoding="async" alt="Settings with backup, app lock and privacy controls">
+      </div>
+    </section>
 
     <section id="overview">
       <h2 class="label">Overview</h2>
@@ -179,11 +212,30 @@
         <div class="row"><dt>Tracking</dt><dd>Accounts, snapshots and balances, recorded whenever you want.</dd></div>
         <div class="row"><dt>Insights</dt><dd>Net worth over time, allocation donuts, comparisons and yearly breakdowns.</dd></div>
         <div class="row"><dt>Privacy</dt><dd>No account, no bank connections, no cloud, no analytics, no ads.</dd></div>
-        <div class="row"><dt>Backup</dt><dd>Export and import a JSON file yourself. Nothing is ever uploaded.</dd></div>
       </dl>
     </section>
 
-    <section id="privacy">
+    <section id="how">
+      <h2 class="label">Recording a snapshot</h2>
+      <p class="intro">A check-in is one sheet, not a long form. Every active account is listed with its last recorded balance and the date it was recorded, so you can see what moved. Untick any account you didn't verify this time — it is left out, not counted as zero.</p>
+      <dl class="rows">
+        <div class="row"><dt>One screen</dt><dd>Accounts grouped by category, with live totals as you type. Review before saving; a title and notes are optional.</dd></div>
+        <div class="row"><dt>Mixed dates</dt><dd>"Latest-known" combines the newest balance per account and says so plainly. Each account detail shows the date its balance was recorded.</dd></div>
+        <div class="row"><dt>Stale values</dt><dd>Accounts not updated in over 45 days are flagged as stale. Accounts never observed are excluded from totals — missing is never zero.</dd></div>
+      </dl>
+    </section>
+
+    <section id="backup">
+      <h2 class="label">Moving to a new iPhone</h2>
+      <p class="intro">There is nothing to sign in to and no automatic cloud sync. Your history moves with one file you control.</p>
+      <dl class="rows">
+        <div class="row"><dt>Export</dt><dd>Settings → Export writes a JSON backup and opens the iOS share sheet. Save it to Files or iCloud Drive, or send it to yourself.</dd></div>
+        <div class="row"><dt>Restore</dt><dd>On the new iPhone, Settings → Import picks that file and replaces the local data with it.</dd></div>
+      </dl>
+      <p class="intro" style="margin-top: 20px">The file is plain JSON, not encrypted, so keep it somewhere you trust.</p>
+    </section>
+
+    <section id="privacy-policy">
       <h2 class="label">Privacy Policy</h2>
       <p class="intro">Effective date: October 2026.</p>
       <dl class="policy">
